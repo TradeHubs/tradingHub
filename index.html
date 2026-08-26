@@ -6,10 +6,15 @@
   <title>InvestHub Pro - Ultra Trading Terminal</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <style>
     body { font-family: 'Plus Jakarta Sans', sans-serif; }
     .custom-scroll::-webkit-scrollbar { width: 5px; height: 5px; }
     .custom-scroll::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 9999px; }
+    .groww-green { color: #00D09C; }
+    .bg-groww-green { background-color: #00D09C; }
+    .bg-groww-green:hover { background-color: #00b386; }
+    .border-groww-green { border-color: #00D09C; }
   </style>
 </head>
 <body class="bg-[#0B0F17] text-slate-100 min-h-screen flex flex-col selection:bg-emerald-500 selection:text-white">
@@ -83,11 +88,11 @@
         </div>
 
         <div class="flex items-center space-x-4">
-          <div class="bg-slate-900 border border-slate-700/80 px-3.5 py-1.5 rounded-full text-xs font-semibold flex items-center space-x-2">
+          <button onclick="openActionModal('deposit')" class="bg-slate-900 hover:bg-slate-800 border border-slate-700/80 px-3.5 py-1.5 rounded-full text-xs font-semibold flex items-center space-x-2 transition">
             <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
             <span class="text-slate-400">Funds:</span>
             <span class="text-emerald-400 font-bold font-mono" id="navBalance">₹20,000.00</span>
-          </div>
+          </button>
           
           <div class="flex items-center space-x-2 border-l border-slate-800 pl-4">
             <div class="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xs font-bold font-mono">
@@ -106,7 +111,7 @@
       <div id="tabTerminalContent" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div class="lg:col-span-2 space-y-6">
           
-          <!-- Live Active Positions Card (Prominent at top if holding positions) -->
+          <!-- Live Active Positions Banner -->
           <div id="activePositionBanner" class="hidden bg-gradient-to-r from-slate-900 via-[#162235] to-slate-900 p-5 rounded-2xl border-2 border-emerald-500/50 shadow-2xl">
             <div class="flex flex-wrap items-center justify-between gap-4">
               <div>
@@ -130,10 +135,8 @@
             </div>
           </div>
 
-          <!-- Live Chart Card with NIFTY, SENSEX & BANK NIFTY Selector -->
+          <!-- Live Chart Card -->
           <div class="bg-[#121927] p-6 rounded-2xl border border-slate-800 shadow-xl relative overflow-hidden">
-            
-            <!-- Index Switcher Bar -->
             <div class="flex flex-wrap items-center justify-between gap-3 mb-4 pb-4 border-b border-slate-800/80">
               <div class="flex space-x-2 bg-slate-900/90 p-1 rounded-xl border border-slate-800">
                 <button id="btnSelectNifty" onclick="selectInstrument('NIFTY 50')" class="px-3.5 py-1.5 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-lg text-xs font-bold tracking-wider uppercase transition">NIFTY 50</button>
@@ -141,7 +144,6 @@
                 <button id="btnSelectBankNifty" onclick="selectInstrument('BANK NIFTY')" class="px-3.5 py-1.5 text-slate-400 hover:text-white rounded-lg text-xs font-bold tracking-wider uppercase transition">BANK NIFTY</button>
               </div>
 
-              <!-- Timeframe Selector -->
               <div class="flex space-x-1 bg-slate-900/60 p-1 rounded-lg text-[11px] font-semibold text-slate-400">
                 <button class="px-2.5 py-1 bg-slate-800 text-emerald-400 rounded">1D</button>
                 <button class="px-2.5 py-1 hover:text-white">1W</button>
@@ -177,7 +179,7 @@
             </div>
           </div>
 
-          <!-- Holdings & Positions Table with EXIT Option -->
+          <!-- Holdings & Positions Table -->
           <div class="bg-[#121927] rounded-2xl border border-slate-800 shadow-xl p-6">
             <div class="flex justify-between items-center mb-4">
               <div class="flex items-center space-x-2">
@@ -202,7 +204,7 @@
             </div>
           </div>
 
-          <!-- NIFTY 50 & BANK NIFTY WATCHLIST -->
+          <!-- Constituent Stocks Watchlist -->
           <div class="bg-[#121927] rounded-2xl border border-slate-800 shadow-xl p-6">
             <div class="flex flex-wrap justify-between items-center gap-3 mb-4">
               <div>
@@ -248,15 +250,18 @@
             </div>
           </div>
 
+          <!-- Verified Bank Mandate Widget -->
           <div class="bg-[#121927] rounded-2xl border border-slate-800 p-5 flex items-center justify-between shadow-lg">
             <div class="flex items-center space-x-3.5">
-              <div class="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center font-black text-xs font-mono">HDFC</div>
+              <div id="sideBankLogo" class="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center font-black text-xs font-mono">HDFC</div>
               <div>
-                <div class="text-xs font-bold text-slate-200">HDFC Bank •••• 4921</div>
+                <div id="sideBankTitle" class="text-xs font-bold text-slate-200">HDFC Bank •••• 4921</div>
                 <div class="text-[11px] text-slate-500">Primary Linked Mandate</div>
               </div>
             </div>
-            <span class="text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-1 rounded-full font-bold">ACTIVE</span>
+            <button onclick="openActionModal('bank')" class="text-[10px] bg-emerald-500/10 hover:bg-emerald-500 hover:text-slate-950 text-emerald-400 border border-emerald-500/20 px-2.5 py-1 rounded-lg font-bold transition">
+              CHANGE
+            </button>
           </div>
 
           <div class="bg-[#121927] rounded-2xl border border-slate-800 p-5 shadow-lg">
@@ -290,7 +295,6 @@
 
       <!-- ================= TAB 2: ORDERS & EXECUTIONS ================= -->
       <div id="tabOrdersContent" class="hidden space-y-6">
-        
         <div class="flex flex-wrap items-center justify-between gap-4 bg-[#121927] p-6 rounded-2xl border border-slate-800">
           <div>
             <h2 class="text-xl font-bold text-white">Order Execution Terminal</h2>
@@ -354,7 +358,6 @@
             </table>
           </div>
         </div>
-
       </div>
 
       <!-- ================= TAB 3: OPTIONS ================= -->
@@ -497,7 +500,6 @@
         <p class="text-xs text-slate-400 mt-0.5">Position is active in your terminal with instant exit option</p>
       </div>
 
-      <!-- Trade Details Box -->
       <div class="bg-slate-900/90 border border-slate-800 p-4 rounded-xl space-y-2.5 text-xs font-mono mb-5">
         <div class="flex justify-between">
           <span class="text-slate-400">Instrument</span>
@@ -571,27 +573,129 @@
     </div>
   </div>
 
-  <!-- ================= WALLET MODAL ================= -->
-  <div id="actionModal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center p-4 z-50">
-    <div class="bg-[#162032] border border-slate-700 w-full max-w-md rounded-2xl p-6 shadow-2xl relative text-white">
+  <!-- ================= UPGRADED GROWW-STYLE WALLET MODAL (DEPOSIT / WITHDRAW / PENNY DROP) ================= -->
+  <div id="actionModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-50">
+    <div class="bg-[#162032] border border-slate-700 w-full max-w-lg rounded-3xl p-6 shadow-2xl relative text-white">
       <button onclick="closeActionModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-lg">&times;</button>
-      <h2 id="modalTitle" class="text-xl font-bold tracking-tight mb-1">Add Capital</h2>
-      <p id="modalSubtitle" class="text-xs text-slate-400 mb-5">Instant deposit via linked account / UPI</p>
+      
+      <!-- Modal Navigation Tabs -->
+      <div class="flex border-b border-slate-800 mb-5 text-xs font-bold tracking-wider uppercase">
+        <button id="modalTabDeposit" onclick="switchFundsModalTab('deposit')" class="flex-1 pb-3 text-emerald-400 border-b-2 border-emerald-400 transition">
+          + Add Money (UPI / Bank)
+        </button>
+        <button id="modalTabWithdraw" onclick="switchFundsModalTab('withdraw')" class="flex-1 pb-3 text-slate-400 hover:text-slate-200 border-b-2 border-transparent transition">
+          Withdraw Funds
+        </button>
+        <button id="modalTabBank" onclick="switchFundsModalTab('bank')" class="flex-1 pb-3 text-slate-400 hover:text-slate-200 border-b-2 border-transparent transition">
+          Link Bank (Penny Drop)
+        </button>
+      </div>
+
       <div id="modalAlert" class="hidden text-xs p-3.5 rounded-xl mb-4 font-medium border"></div>
 
-      <div class="space-y-4">
+      <!-- ================= MODAL SUB-TAB 1: DEPOSIT ================= -->
+      <div id="modalDepositSection" class="space-y-4">
         <div>
-          <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">Amount (₹)</label>
+          <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Enter Deposit Amount</label>
           <div class="relative">
-            <span class="absolute left-4 top-3 text-slate-500 font-mono font-bold">₹</span>
-            <input type="number" id="txAmount" class="w-full pl-9 pr-4 py-3 text-lg font-mono font-bold rounded-xl bg-slate-900 border border-slate-700 focus:border-emerald-400 focus:outline-none text-white" placeholder="1000" />
+            <span class="absolute left-4 top-3 text-slate-500 font-mono font-bold text-lg">₹</span>
+            <input type="number" id="txAmount" class="w-full pl-9 pr-4 py-3 text-xl font-mono font-bold rounded-xl bg-slate-900 border border-slate-700 focus:border-emerald-400 focus:outline-none text-white" value="1000" min="100" />
+          </div>
+          <div class="grid grid-cols-4 gap-2 mt-2">
+            <button onclick="setTxAmount(500)" class="py-1 text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition">+₹500</button>
+            <button onclick="setTxAmount(1000)" class="py-1 text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition">+₹1000</button>
+            <button onclick="setTxAmount(2000)" class="py-1 text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition">+₹2000</button>
+            <button onclick="setTxAmount(5000)" class="py-1 text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition">+₹5000</button>
           </div>
         </div>
 
-        <button id="modalActionBtn" onclick="processTransaction()" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 py-3.5 rounded-xl font-bold text-xs tracking-wider uppercase transition">
-          Confirm
+        <div class="space-y-2.5">
+          <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider">Payment Options</label>
+          
+          <!-- UPI Card -->
+          <div onclick="selectDepositPaymentMode('upi')" id="depositUpiOptionCard" class="p-3.5 border border-emerald-500 bg-emerald-500/10 rounded-2xl flex items-center justify-between cursor-pointer transition">
+            <div class="flex items-center gap-3">
+              <input type="radio" id="modalRadioUpi" name="fundModeModal" checked class="w-4 h-4 text-emerald-500 bg-slate-900" />
+              <div>
+                <p class="text-sm font-bold text-white">UPI Apps (GPay / PhonePe / Paytm)</p>
+                <p class="text-xs text-slate-400">Instant credit • Zero payment fee</p>
+              </div>
+            </div>
+            <span class="text-[10px] font-bold text-emerald-400 bg-emerald-500/20 px-2 py-0.5 rounded">FASTEST</span>
+          </div>
+
+          <!-- Net Banking Card -->
+          <div onclick="selectDepositPaymentMode('netbanking')" id="depositBankOptionCard" class="p-3.5 border border-slate-700 bg-slate-900/60 rounded-2xl flex items-center justify-between cursor-pointer transition">
+            <div class="flex items-center gap-3">
+              <input type="radio" id="modalRadioBank" name="fundModeModal" class="w-4 h-4 text-emerald-500 bg-slate-900" />
+              <div>
+                <p id="modalDepositBankLabel" class="text-sm font-bold text-white">HDFC Bank •••• 4921</p>
+                <p class="text-xs text-slate-400">Linked Primary Account • Net Banking</p>
+              </div>
+            </div>
+            <span class="text-[10px] font-semibold text-slate-400">PRIMARY</span>
+          </div>
+        </div>
+
+        <button onclick="executeModalDeposit()" id="modalDepositActionBtn" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 py-3.5 rounded-xl font-bold text-xs tracking-wider uppercase transition shadow-lg shadow-emerald-500/20 active:scale-95">
+          Add ₹1,000 to Wallet
         </button>
       </div>
+
+      <!-- ================= MODAL SUB-TAB 2: WITHDRAW ================= -->
+      <div id="modalWithdrawSection" class="hidden space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Amount to Withdraw</label>
+          <div class="relative">
+            <span class="absolute left-4 top-3 text-slate-500 font-mono font-bold text-lg">₹</span>
+            <input type="number" id="txWithdrawAmount" class="w-full pl-9 pr-4 py-3 text-xl font-mono font-bold rounded-xl bg-slate-900 border border-slate-700 focus:border-emerald-400 focus:outline-none text-white" value="1000" min="100" />
+          </div>
+          <p id="modalWithdrawAvailNotice" class="text-xs text-slate-400 mt-1 font-mono">Available: ₹20,000.00</p>
+        </div>
+
+        <div class="p-4 bg-slate-900/80 border border-slate-800 rounded-2xl">
+          <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Direct IMPS Payout To</p>
+          <div class="flex justify-between items-center">
+            <div>
+              <p id="modalWithdrawBankName" class="text-sm font-bold text-white">HDFC Bank</p>
+              <p id="modalWithdrawBankDetails" class="text-xs text-slate-400 font-mono">•••• •••• 4921 &bull; IFSC: HDFC0000123</p>
+            </div>
+            <span class="text-[10px] font-bold text-emerald-400 bg-emerald-500/20 px-2 py-1 rounded">VERIFIED</span>
+          </div>
+        </div>
+
+        <button onclick="executeModalWithdrawal()" class="w-full bg-rose-500 hover:bg-rose-400 text-white py-3.5 rounded-xl font-bold text-xs tracking-wider uppercase transition shadow-lg shadow-rose-500/20 active:scale-95">
+          Request Withdrawal
+        </button>
+      </div>
+
+      <!-- ================= MODAL SUB-TAB 3: PENNY DROP BANK LINKING ================= -->
+      <div id="modalBankSection" class="hidden space-y-3.5">
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1">Account Holder Name (As per PAN)</label>
+          <input type="text" id="pennyHolderName" placeholder="e.g. NIHARIKA SAHU" class="w-full p-2.5 bg-slate-900 border border-slate-700 rounded-xl text-xs uppercase focus:border-emerald-400 focus:outline-none text-white" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1">Account Number</label>
+          <input type="password" id="pennyAccNumber" placeholder="Enter Account Number" class="w-full p-2.5 bg-slate-900 border border-slate-700 rounded-xl text-xs focus:border-emerald-400 focus:outline-none text-white" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1">Confirm Account Number</label>
+          <input type="text" id="pennyConfirmAccNumber" placeholder="Re-enter Account Number" class="w-full p-2.5 bg-slate-900 border border-slate-700 rounded-xl text-xs focus:border-emerald-400 focus:outline-none text-white" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1">IFSC Code</label>
+          <input type="text" id="pennyIfsc" placeholder="e.g. SBIN0001234" class="w-full p-2.5 bg-slate-900 border border-slate-700 rounded-xl text-xs uppercase focus:border-emerald-400 focus:outline-none text-white" />
+        </div>
+
+        <button onclick="executeModalPennyDrop()" id="pennyVerifyBtn" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 py-3.5 rounded-xl font-bold text-xs tracking-wider uppercase transition shadow-lg shadow-emerald-500/20 active:scale-95">
+          Verify Bank Account (₹1 Penny Drop)
+        </button>
+      </div>
+
     </div>
   </div>
 
@@ -688,6 +792,14 @@
       transactions: [{ type: 'Capital Inflow', amount: 20000, date: 'Initial Allocation', status: 'Settled' }]
     };
 
+    let primaryBank = {
+      name: 'HDFC Bank',
+      code: 'HDFC',
+      accMasked: '•••• •••• 4921',
+      ifsc: 'HDFC0000123'
+    };
+
+    let selectedDepositMode = 'upi';
     let activeInstrument = MARKET_INDICES[0];
     let selectedOptionIndex = 'NIFTY';
     let currentAction = 'deposit';
@@ -707,6 +819,17 @@
       { id: 3, name: "HDFC Top 100 Large Cap", category: "Large Cap", cagr: "18.5%", rating: "4★", nav: "₹920.3" },
       { id: 4, name: "Motilal Oswal Midcap Fund", category: "Mid Cap", cagr: "27.4%", rating: "5★", nav: "₹94.6" }
     ];
+
+    // Listen to Deposit Input dynamically
+    document.addEventListener('DOMContentLoaded', () => {
+      const txInp = document.getElementById('txAmount');
+      if (txInp) {
+        txInp.addEventListener('input', (e) => {
+          const val = Number(e.target.value) || 0;
+          document.getElementById('modalDepositActionBtn').innerText = `Add ₹${val.toLocaleString('en-IN')} to Wallet`;
+        });
+      }
+    });
 
     // Auth Submission
     document.getElementById('loginForm').addEventListener('submit', (e) => {
@@ -960,7 +1083,6 @@
       }
     }
 
-    // Direct Full Exit for Stock Holdings
     function exitStockPosition(symbol) {
       const existing = userState.holdings.find(h => h.symbol === symbol);
       if (!existing) return;
@@ -1403,56 +1525,167 @@
       document.getElementById('analyticsTotalValue').innerText = formatINR(totalPortfolio);
     }
 
+    // ================= UPGRADED WALLET & FUNDS LOGIC (GROWW STYLE) =================
     function openActionModal(action) {
-      currentAction = action;
-      const modal = document.getElementById('actionModal');
-      const title = document.getElementById('modalTitle');
-      const btn = document.getElementById('modalActionBtn');
-      
       document.getElementById('modalAlert').classList.add('hidden');
-      document.getElementById('txAmount').value = '';
-
-      if (action === 'deposit') {
-        title.innerText = "Add Capital";
-        btn.innerText = "Complete Deposit";
-      } else {
-        title.innerText = "Withdraw Capital";
-        btn.innerText = "Request Payout";
-      }
-
-      modal.classList.remove('hidden');
+      switchFundsModalTab(action);
+      document.getElementById('actionModal').classList.remove('hidden');
     }
 
     function closeActionModal() {
       document.getElementById('actionModal').classList.add('hidden');
     }
 
-    function processTransaction() {
+    function switchFundsModalTab(tab) {
+      document.getElementById('modalDepositSection').classList.add('hidden');
+      document.getElementById('modalWithdrawSection').classList.add('hidden');
+      document.getElementById('modalBankSection').classList.add('hidden');
+
+      document.getElementById('modalTabDeposit').className = "flex-1 pb-3 text-slate-400 hover:text-slate-200 border-b-2 border-transparent transition";
+      document.getElementById('modalTabWithdraw').className = "flex-1 pb-3 text-slate-400 hover:text-slate-200 border-b-2 border-transparent transition";
+      document.getElementById('modalTabBank').className = "flex-1 pb-3 text-slate-400 hover:text-slate-200 border-b-2 border-transparent transition";
+
+      if (tab === 'deposit') {
+        document.getElementById('modalDepositSection').classList.remove('hidden');
+        document.getElementById('modalTabDeposit').className = "flex-1 pb-3 text-emerald-400 border-b-2 border-emerald-400 transition";
+      } else if (tab === 'withdraw') {
+        document.getElementById('modalWithdrawSection').classList.remove('hidden');
+        document.getElementById('modalTabWithdraw').className = "flex-1 pb-3 text-emerald-400 border-b-2 border-emerald-400 transition";
+        document.getElementById('modalWithdrawAvailNotice').innerText = `Available to withdraw: ${formatINR(userState.balance)}`;
+      } else if (tab === 'bank') {
+        document.getElementById('modalBankSection').classList.remove('hidden');
+        document.getElementById('modalTabBank').className = "flex-1 pb-3 text-emerald-400 border-b-2 border-emerald-400 transition";
+      }
+    }
+
+    function setTxAmount(val) {
+      document.getElementById('txAmount').value = val;
+      document.getElementById('modalDepositActionBtn').innerText = `Add ₹${val.toLocaleString('en-IN')} to Wallet`;
+    }
+
+    function selectDepositPaymentMode(mode) {
+      selectedDepositMode = mode;
+      const upiCard = document.getElementById('depositUpiOptionCard');
+      const bankCard = document.getElementById('depositBankOptionCard');
+      const radioUpi = document.getElementById('modalRadioUpi');
+      const radioBank = document.getElementById('modalRadioBank');
+
+      if (mode === 'upi') {
+        radioUpi.checked = true;
+        upiCard.className = "p-3.5 border border-emerald-500 bg-emerald-500/10 rounded-2xl flex items-center justify-between cursor-pointer transition";
+        bankCard.className = "p-3.5 border border-slate-700 bg-slate-900/60 rounded-2xl flex items-center justify-between cursor-pointer transition";
+      } else {
+        radioBank.checked = true;
+        bankCard.className = "p-3.5 border border-emerald-500 bg-emerald-500/10 rounded-2xl flex items-center justify-between cursor-pointer transition";
+        upiCard.className = "p-3.5 border border-slate-700 bg-slate-900/60 rounded-2xl flex items-center justify-between cursor-pointer transition";
+      }
+    }
+
+    function executeModalDeposit() {
       const amount = parseFloat(document.getElementById('txAmount').value);
       const alert = document.getElementById('modalAlert');
 
-      if (!amount || amount <= 0) {
-        alert.className = "text-xs p-3 rounded-xl font-medium bg-rose-500/10 border border-rose-500/30 text-rose-400 block mb-4";
-        alert.innerText = "Please specify a valid amount.";
+      if (!amount || amount < 100) {
+        alert.className = "text-xs p-3.5 rounded-xl mb-4 font-medium bg-rose-500/10 border border-rose-500/30 text-rose-400 block";
+        alert.innerText = "Minimum deposit is ₹100.";
         return;
       }
 
-      if (currentAction === 'withdraw') {
-        alert.className = "text-xs p-3 rounded-xl font-medium bg-amber-500/10 border border-amber-500/30 text-amber-400 block mb-4";
-        alert.innerText = "Withdrawal will be done only Friday and It will be take 24-72 hours";
+      const btn = document.getElementById('modalDepositActionBtn');
+      btn.innerText = "Connecting Payment Gateway...";
+      btn.disabled = true;
+
+      setTimeout(() => {
+        userState.balance += amount;
+        userState.transactions.unshift({
+          type: `Capital Deposit (${selectedDepositMode.toUpperCase()})`,
+          amount: amount,
+          date: 'Just now',
+          status: 'Settled'
+        });
+
+        updateUI();
+        btn.innerText = `Add ₹${amount.toLocaleString('en-IN')} to Wallet`;
+        btn.disabled = false;
+        closeActionModal();
+      }, 800);
+    }
+
+    function executeModalWithdrawal() {
+      const amount = parseFloat(document.getElementById('txWithdrawAmount').value);
+      const alert = document.getElementById('modalAlert');
+
+      if (!amount || amount < 100) {
+        alert.className = "text-xs p-3.5 rounded-xl mb-4 font-medium bg-rose-500/10 border border-rose-500/30 text-rose-400 block";
+        alert.innerText = "Minimum withdrawal is ₹100.";
         return;
       }
 
-      userState.balance += amount;
-      userState.transactions.unshift({
-        type: 'Capital Deposit',
-        amount: amount,
-        date: 'Just now',
-        status: 'Settled'
-      });
+      if (amount > userState.balance) {
+        alert.className = "text-xs p-3.5 rounded-xl mb-4 font-medium bg-rose-500/10 border border-rose-500/30 text-rose-400 block";
+        alert.innerText = "Insufficient wallet balance.";
+        return;
+      }
 
-      updateUI();
-      closeActionModal();
+      alert.className = "text-xs p-3.5 rounded-xl mb-4 font-medium bg-amber-500/10 border border-amber-500/30 text-amber-400 block";
+      alert.innerText = "Withdrawal will be done only Friday and It will be take 24-72 hours";
+    }
+
+    function executeModalPennyDrop() {
+      const name = document.getElementById('pennyHolderName').value.trim();
+      const acc = document.getElementById('pennyAccNumber').value.trim();
+      const confirmAcc = document.getElementById('pennyConfirmAccNumber').value.trim();
+      const ifsc = document.getElementById('pennyIfsc').value.trim().toUpperCase();
+      const alert = document.getElementById('modalAlert');
+
+      if (!name || !acc || !ifsc) {
+        alert.className = "text-xs p-3.5 rounded-xl mb-4 font-medium bg-rose-500/10 border border-rose-500/30 text-rose-400 block";
+        alert.innerText = "Please fill all bank details.";
+        return;
+      }
+      if (acc !== confirmAcc) {
+        alert.className = "text-xs p-3.5 rounded-xl mb-4 font-medium bg-rose-500/10 border border-rose-500/30 text-rose-400 block";
+        alert.innerText = "Account numbers do not match.";
+        return;
+      }
+      if (ifsc.length !== 11) {
+        alert.className = "text-xs p-3.5 rounded-xl mb-4 font-medium bg-rose-500/10 border border-rose-500/30 text-rose-400 block";
+        alert.innerText = "Invalid 11-digit IFSC code format.";
+        return;
+      }
+
+      const btn = document.getElementById('pennyVerifyBtn');
+      btn.innerText = "Verifying ₹1 Penny Drop...";
+      btn.disabled = true;
+
+      setTimeout(() => {
+        let bCode = ifsc.startsWith('SBIN') ? 'SBI' : ifsc.startsWith('ICIC') ? 'ICICI' : ifsc.startsWith('KKBK') ? 'KOTAK' : 'BANK';
+        let bName = ifsc.startsWith('SBIN') ? 'State Bank of India' : ifsc.startsWith('ICIC') ? 'ICICI Bank' : ifsc.startsWith('KKBK') ? 'Kotak Bank' : 'Verified Bank';
+        
+        primaryBank = {
+          name: bName,
+          code: bCode,
+          accMasked: '•••• •••• ' + acc.slice(-4),
+          ifsc: ifsc
+        };
+
+        // Update All Bank Labels Across Interface
+        document.getElementById('sideBankTitle').innerText = `${primaryBank.name} ${primaryBank.accMasked}`;
+        document.getElementById('sideBankLogo').innerText = primaryBank.code;
+        document.getElementById('modalDepositBankLabel').innerText = `${primaryBank.name} ${primaryBank.accMasked}`;
+        document.getElementById('modalWithdrawBankName').innerText = primaryBank.name;
+        document.getElementById('modalWithdrawBankDetails').innerText = `${primaryBank.accMasked} • IFSC: ${primaryBank.ifsc}`;
+
+        btn.innerText = "Verify Bank Account (₹1 Penny Drop)";
+        btn.disabled = false;
+        
+        alert.className = "text-xs p-3.5 rounded-xl mb-4 font-medium bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 block";
+        alert.innerText = `Bank Verified! Linked with ${primaryBank.name}`;
+        
+        setTimeout(() => {
+          switchFundsModalTab('deposit');
+        }, 1000);
+      }, 1200);
     }
 
     // UI Synchronizer with Live Position Banner
