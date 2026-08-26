@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>InvestHub Pro - Ultra Trading Terminal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Stable TradingView Lightweight Charts -->
+  <script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    .glass-card {
+      background: rgba(255, 255, 255, 0.88);
+      backdrop-filter: blur(14px);
+      border: 1px solid rgba(226, 232, 240, 0.8);
+    }
+    .glow-accent {
+      box-shadow: 0 8px 30px -4px rgba(0, 208, 156, 0.25);
+    }
+    .custom-scroll::-webkit-scrollbar {
+      width: 5px;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #e2e8f0;
+      border-radius: 9999px;
+    }
+  </style>
+</head>
+<body class="bg-[#0B0F17] text-slate-100 min-h-screen flex flex-col selection:bg-emerald-500 selection:text-white">
+
+  <!-- ================= AUTH VIEW ================= -->
+  <div id="authView" class="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-gradient-to-br from-[#0B0F17] via-[#111827] to-[#0A192F]">
+    
+    <!-- Background Gradient Spheres -->
+    <div class="absolute top-1/4 -left-20 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute bottom-1/4 -right-20 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+    <div class="bg-[#161F30]/90 backdrop-blur-2xl p-8 sm:p-10 rounded-3xl shadow-2xl w-full max-w-md border border-slate-800 relative z-10">
+      
+      <!-- Brand Logo Header -->
+      <div class="text-center mb-8">
+        <div class="inline-flex items-center justify-center w-14 h-14 bg-gradient-to-tr from-emerald-500 to-teal-300 rounded-2xl shadow-lg shadow-emerald-500/20 mb-3">
+          <svg class="w-8 h-8 text-slate-950 font-bold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+          </svg>
+        </div>
+        <h1 class="text-2xl font-extrabold tracking-tight text-white">InvestHub <span class="text-emerald-400 text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">PRO</span></h1>
+        <p class="text-slate-400 text-xs mt-1.5 font-medium">Next-Gen Stock Trading & Investment Portal</p>
+      </div>
+
+      <div id="authAlert" class="hidden text-xs p-3.5 rounded-xl mb-5 text-center font-medium border"></div>
+
+      <form id="loginForm" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">Username / ID</label>
+          <input type="text" id="loginUsername" value="Roshu2042" required class="w-full px-4 py-3 rounded-xl bg-slate-900/80 border border-slate-700/80 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 focus:outline-none text-sm text-white placeholder-slate-500 transition" placeholder="Roshu2042" />
+        </div>
+        <div>
+          <div class="flex justify-between items-center mb-1.5">
+            <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider">Password</label>
+            <span class="text-[11px] text-emerald-400 hover:underline cursor-pointer">Help?</span>
+          </div>
+          <input type="password" id="loginPassword" value="Roshu2042@" required class="w-full px-4 py-3 rounded-xl bg-slate-900/80 border border-slate-700/80 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 focus:outline-none text-sm text-white placeholder-slate-500 transition" placeholder="••••••••" />
+        </div>
+        
+        <button type="submit" class="w-full bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-bold py-3.5 rounded-xl text-sm transition shadow-lg shadow-emerald-500/20 transform active:scale-[0.98]">
+          Unlock Terminal
+        </button>
+      </form>
+
+      <div class="mt-6 pt-5 border-t border-slate-800/80 text-center">
+        <div class="text-[11px] text-slate-400">
+          User: <span class="text-emerald-400 font-mono font-bold">Roshu2042</span> &bull; Pass: <span class="text-emerald-400 font-mono font-bold">Roshu2042@</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= DASHBOARD VIEW ================= -->
+  <div id="dashboardView" class="hidden min-h-screen flex flex-col bg-[#0B0F17]">
+    
+    <!-- Top Modern Ticker Header -->
+    <header class="bg-[#111827]/90 border-b border-slate-800 backdrop-blur-md sticky top-0 z-40">
+      <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+        
+        <!-- Brand & Nav Links -->
+        <div class="flex items-center space-x-8">
+          <div class="flex items-center space-x-2.5">
+            <div class="w-8 h-8 rounded-xl bg-emerald-500 text-slate-950 flex items-center justify-center font-black text-base shadow-sm">
+              G
+            </div>
+            <span class="text-lg font-black tracking-tight text-white">InvestHub<span class="text-emerald-400">.</span></span>
+          </div>
+
+          <nav class="hidden md:flex space-x-6 text-xs font-semibold tracking-wide uppercase">
+            <a href="#" class="text-emerald-400 border-b-2 border-emerald-400 pb-5 pt-5">Terminal</a>
+            <a href="#" class="text-slate-400 hover:text-slate-200 pb-5 pt-5 transition">Mutual Funds</a>
+            <a href="#" class="text-slate-400 hover:text-slate-200 pb-5 pt-5 transition">Options (F&O)</a>
+            <a href="#" class="text-slate-400 hover:text-slate-200 pb-5 pt-5 transition">Analytics</a>
+          </nav>
+        </div>
+
+        <!-- User Profile & Wallet Quick Badge -->
+        <div class="flex items-center space-x-4">
+          <div class="bg-slate-900 border border-slate-700/80 px-3.5 py-1.5 rounded-full text-xs font-semibold flex items-center space-x-2">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span class="text-slate-400">Funds:</span>
+            <span class="text-emerald-400 font-bold font-mono" id="navBalance">₹20,000.00</span>
+          </div>
+          
+          <div class="flex items-center space-x-2 border-l border-slate-800 pl-4">
+            <div class="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xs font-bold font-mono">
+              R
+            </div>
+            <button onclick="logout()" class="text-xs text-rose-400 hover:text-rose-300 font-medium transition">Logout</button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <main class="max-w-7xl mx-auto px-4 py-6 flex-1 w-full grid grid-cols-1 lg:grid-cols-3 gap-6">
+      
+      <!-- Left Column: Dynamic Chart & Holdings -->
+      <div class="lg:col-span-2 space-y-6">
+        
+        <!-- Live Chart Container Card -->
+        <div class="bg-[#121927] p-6 rounded-2xl border border-slate-800 shadow-xl relative overflow-hidden">
+          
+          <div class="flex flex-wrap justify-between items-center mb-4">
+            <div>
+              <div class="flex items-center space-x-2">
+                <h2 class="text-2xl font-black text-white tracking-tight">RELIANCE</h2>
+                <span class="text-[10px] bg-slate-800 text-emerald-400 border border-emerald-500/30 font-bold px-2 py-0.5 rounded uppercase">NSE EQ</span>
+                <span class="text-[10px] bg-emerald-500/10 text-emerald-400 font-medium px-2 py-0.5 rounded">Live Market</span>
+              </div>
+              <div class="flex items-baseline space-x-3 mt-1.5">
+                <span class="text-3xl font-black font-mono text-white" id="currentStockPrice">₹2,950.00</span>
+                <span class="text-xs font-bold text-emerald-400 flex items-center">
+                  <svg class="w-3.5 h-3.5 mr-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg>
+                  +35.50 (+1.22%) <span class="text-slate-500 font-normal ml-1">Today</span>
+                </span>
+              </div>
+            </div>
+
+            <!-- Trade Buttons -->
+            <div class="flex items-center space-x-3 mt-3 sm:mt-0">
+              <button onclick="openTradeModal('BUY')" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black px-6 py-2.5 rounded-xl text-xs tracking-wider uppercase transition shadow-lg shadow-emerald-500/20 active:scale-95">
+                BUY
+              </button>
+              <button onclick="openTradeModal('SELL')" class="bg-rose-500 hover:bg-rose-400 text-white font-black px-6 py-2.5 rounded-xl text-xs tracking-wider uppercase transition shadow-lg shadow-rose-500/20 active:scale-95">
+                SELL
+              </button>
+            </div>
+          </div>
+
+          <!-- Timeframe Controls -->
+          <div class="flex space-x-1.5 bg-slate-900/90 p-1 rounded-xl w-fit mb-3 border border-slate-800">
+            <button onclick="switchTimeframe('1D')" class="px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded-lg text-xs font-bold">1D</button>
+            <button onclick="switchTimeframe('1W')" class="px-3 py-1 text-slate-400 hover:text-slate-200 rounded-lg text-xs font-medium transition">1W</button>
+            <button onclick="switchTimeframe('1M')" class="px-3 py-1 text-slate-400 hover:text-slate-200 rounded-lg text-xs font-medium transition">1M</button>
+            <button onclick="switchTimeframe('1Y')" class="px-3 py-1 text-slate-400 hover:text-slate-200 rounded-lg text-xs font-medium transition">1Y</button>
+          </div>
+
+          <!-- Candlestick Chart Area -->
+          <div id="tradingChartContainer" class="w-full h-80 relative rounded-xl overflow-hidden bg-[#0F1420]"></div>
+        </div>
+
+        <!-- Portfolio Holdings Table -->
+        <div class="bg-[#121927] rounded-2xl border border-slate-800 shadow-xl p-6">
+          <div class="flex justify-between items-center mb-4">
+            <div class="flex items-center space-x-2">
+              <h3 class="text-base font-bold text-white">Active Positions</h3>
+              <span class="text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded font-mono">Portfolio</span>
+            </div>
+            <span class="text-xs text-slate-400 font-mono">Real-Time Sync</span>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead>
+                <tr class="text-slate-400 border-b border-slate-800/80 pb-3">
+                  <th class="pb-3 font-semibold uppercase tracking-wider">Asset</th>
+                  <th class="pb-3 font-semibold uppercase tracking-wider text-center">Qty</th>
+                  <th class="pb-3 font-semibold uppercase tracking-wider text-right">Avg Price</th>
+                  <th class="pb-3 font-semibold uppercase tracking-wider text-right">Market Value</th>
+                </tr>
+              </thead>
+              <tbody id="holdingsTableBody" class="divide-y divide-slate-800/60 font-mono">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Transaction Feed -->
+        <div class="bg-[#121927] rounded-2xl border border-slate-800 shadow-xl p-6">
+          <h3 class="text-base font-bold text-white mb-4">Activity & Audit Log</h3>
+          <div id="txList" class="divide-y divide-slate-800/60 text-xs custom-scroll max-h-56 overflow-y-auto">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Wallet Engine & Market Data -->
+      <div class="space-y-6">
+        
+        <!-- Wallet Card -->
+        <div class="bg-gradient-to-b from-[#162032] to-[#111827] rounded-2xl border border-slate-800 shadow-xl p-6 relative overflow-hidden">
+          <div class="absolute -top-12 -right-12 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none"></div>
+
+          <div class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">InvestHub Capital</div>
+          <div class="text-3xl font-black text-white font-mono mt-2" id="walletCardBalance">₹20,000.00</div>
+          <p class="text-xs text-slate-500 mt-1">Available for stock executions & withdrawals</p>
+
+          <div class="grid grid-cols-2 gap-3 mt-6">
+            <button onclick="openActionModal('deposit')" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 py-3 rounded-xl font-bold text-xs tracking-wider uppercase transition shadow-md shadow-emerald-500/20 active:scale-95">
+              + Add Funds
+            </button>
+            <button onclick="openActionModal('withdraw')" class="bg-slate-800 hover:bg-slate-700 text-slate-200 py-3 rounded-xl font-bold text-xs tracking-wider uppercase transition active:scale-95 border border-slate-700">
+              Withdraw
+            </button>
+          </div>
+        </div>
+
+        <!-- Bank Account Link Badge -->
+        <div class="bg-[#121927] rounded-2xl border border-slate-800 p-5 flex items-center justify-between shadow-lg">
+          <div class="flex items-center space-x-3.5">
+            <div class="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center font-black text-xs font-mono">
+              HDFC
+            </div>
+            <div>
+              <div class="text-xs font-bold text-slate-200">HDFC Bank •••• 4921</div>
+              <div class="text-[11px] text-slate-500">Primary Linked Mandate</div>
+            </div>
+          </div>
+          <span class="text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-1 rounded-full font-bold">ACTIVE</span>
+        </div>
+
+        <!-- Market Watch Overview -->
+        <div class="bg-[#121927] rounded-2xl border border-slate-800 p-5 shadow-lg">
+          <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Benchmark Trackers</h4>
+          <div class="space-y-3.5 text-xs">
+            <div class="flex justify-between items-center p-2.5 rounded-xl bg-slate-900/60 border border-slate-800/60">
+              <span class="font-bold text-slate-300">NIFTY 50</span>
+              <span class="font-mono font-bold text-emerald-400">24,852.10 (+0.58%)</span>
+            </div>
+            <div class="flex justify-between items-center p-2.5 rounded-xl bg-slate-900/60 border border-slate-800/60">
+              <span class="font-bold text-slate-300">SENSEX</span>
+              <span class="font-mono font-bold text-emerald-400">81,625.40 (+0.48%)</span>
+            </div>
+            <div class="flex justify-between items-center p-2.5 rounded-xl bg-slate-900/60 border border-slate-800/60">
+              <span class="font-bold text-slate-300">BANK NIFTY</span>
+              <span class="font-mono font-bold text-rose-400">51,200.15 (-0.17%)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- ================= BUY / SELL MODAL ================= -->
+  <div id="tradeModal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center p-4 z-50">
+    <div class="bg-[#162032] border border-slate-700 w-full max-w-md rounded-2xl p-6 shadow-2xl relative text-white">
+      <button onclick="closeTradeModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-lg">&times;</button>
+      
+      <div class="flex items-center space-x-2.5 mb-1.5">
+        <span id="tradeModalBadge" class="text-xs font-black px-2.5 py-0.5 rounded text-slate-950 bg-emerald-400">BUY</span>
+        <h2 class="text-xl font-bold tracking-tight">RELIANCE</h2>
+      </div>
+      <p class="text-xs text-slate-400 mb-5">Market Price: <span class="font-mono font-bold text-slate-200">₹2,950.00</span></p>
+
+      <div id="tradeAlert" class="hidden text-xs p-3.5 rounded-xl mb-4 font-medium border"></div>
+
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">Quantity (Units)</label>
+          <input type="number" id="tradeQty" min="1" value="1" oninput="updateOrderSummary()" class="w-full px-4 py-3 text-base font-mono font-bold rounded-xl bg-slate-900 border border-slate-700 focus:border-emerald-400 focus:outline-none text-white" />
+        </div>
+
+        <div class="bg-slate-900/80 border border-slate-800 p-4 rounded-xl space-y-2 text-xs font-mono">
+          <div class="flex justify-between text-slate-400">
+            <span>Execution Mode</span>
+            <span class="text-slate-200 font-semibold">MARKET (INSTANT)</span>
+          </div>
+          <div class="flex justify-between text-slate-400">
+            <span>Order Value</span>
+            <span class="font-bold text-white text-sm" id="orderTotal">₹2,950.00</span>
+          </div>
+          <div class="flex justify-between text-slate-400 border-t border-slate-800 pt-2">
+            <span>Available Capital</span>
+            <span class="text-emerald-400 font-semibold" id="tradeAvailableBal">₹20,000.00</span>
+          </div>
+        </div>
+
+        <button id="confirmTradeBtn" onclick="executeTradeOrder()" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 py-3.5 rounded-xl font-bold text-xs tracking-wider uppercase transition shadow-lg shadow-emerald-500/20">
+          Execute BUY Order
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= WALLET MODAL (DEPOSIT / WITHDRAW) ================= -->
+  <div id="actionModal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center p-4 z-50">
+    <div class="bg-[#162032] border border-slate-700 w-full max-w-md rounded-2xl p-6 shadow-2xl relative text-white">
+      <button onclick="closeActionModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-lg">&times;</button>
+      
+      <h2 id="modalTitle" class="text-xl font-bold tracking-tight mb-1">Add Capital</h2>
+      <p id="modalSubtitle" class="text-xs text-slate-400 mb-5">Instant fund transfer via Linked Bank / UPI</p>
+
+      <div id="modalAlert" class="hidden text-xs p-3.5 rounded-xl mb-4 font-medium border"></div>
+
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">Amount (₹)</label>
+          <div class="relative">
+            <span class="absolute left-4 top-3 text-slate-500 font-mono font-bold">₹</span>
+            <input type="number" id="txAmount" class="w-full pl-9 pr-4 py-3 text-lg font-mono font-bold rounded-xl bg-slate-900 border border-slate-700 focus:border-emerald-400 focus:outline-none text-white" placeholder="1000" />
+          </div>
+          <div class="flex space-x-2 mt-2.5">
+            <button onclick="setAmount(500)" class="text-xs bg-slate-900 hover:bg-slate-800 border border-slate-700 px-3 py-1 rounded-lg text-slate-300 font-mono font-medium">+₹500</button>
+            <button onclick="setAmount(1000)" class="text-xs bg-slate-900 hover:bg-slate-800 border border-slate-700 px-3 py-1 rounded-lg text-slate-300 font-mono font-medium">+₹1,000</button>
+            <button onclick="setAmount(5000)" class="text-xs bg-slate-900 hover:bg-slate-800 border border-slate-700 px-3 py-1 rounded-lg text-slate-300 font-mono font-medium">+₹5,000</button>
+          </div>
+        </div>
+
+        <button id="modalActionBtn" onclick="processTransaction()" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 py-3.5 rounded-xl font-bold text-xs tracking-wider uppercase transition shadow-lg shadow-emerald-500/20">
+          Confirm
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= JAVASCRIPT ENGINE ================= -->
+  <script>
+    const STOCK_PRICE = 2950.00;
+
+    // Target Credentials
+    const VALID_USER = "Roshu2042";
+    const VALID_PASS = "Roshu2042@";
+
+    // Application State
+    let userState = {
+      isLoggedIn: false,
+      balance: 20000.00,
+      holdings: {
+        symbol: 'RELIANCE',
+        qty: 0,
+        avgPrice: 0
+      },
+      transactions: [
+        { type: 'Capital Inflow', amount: 20000, date: 'Initial Allocation', status: 'Settled' }
+      ]
+    };
+
+    let currentAction = 'deposit';
+    let currentTradeType = 'BUY';
+    let chartInstance = null;
+    let candlestickSeries = null;
+
+    const formatINR = (val) => "₹" + Number(val).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+    // Authentication Logic
+    document.getElementById('loginForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const user = document.getElementById('loginUsername').value.trim();
+      const pass = document.getElementById('loginPassword').value.trim();
+      const alert = document.getElementById('authAlert');
+
+      if (user === VALID_USER && pass === VALID_PASS) {
+        alert.className = "text-xs p-3.5 rounded-xl mb-5 text-center font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 block";
+        alert.innerText = "Credentials verified. Initializing secure terminal...";
+        setTimeout(() => {
+          userState.isLoggedIn = true;
+          document.getElementById('authView').classList.add('hidden');
+          document.getElementById('dashboardView').classList.remove('hidden');
+          updateUI();
+          initTradingChart();
+        }, 600);
+      } else {
+        alert.className = "text-xs p-3.5 rounded-xl mb-5 text-center font-medium bg-rose-500/10 text-rose-400 border border-rose-500/30 block";
+        alert.innerText = "Access Denied. Use Username: Roshu2042 / Pass: Roshu2042@";
+      }
+    });
+
+    function logout() {
+      userState.isLoggedIn = false;
+      document.getElementById('dashboardView').classList.add('hidden');
+      document.getElementById('authView').classList.remove('hidden');
+    }
+
+    // Trade Operations (BUY / SELL)
+    function openTradeModal(type) {
+      currentTradeType = type;
+      const modal = document.getElementById('tradeModal');
+      const badge = document.getElementById('tradeModalBadge');
+      const btn = document.getElementById('confirmTradeBtn');
+      const alert = document.getElementById('tradeAlert');
+
+      alert.classList.add('hidden');
+      document.getElementById('tradeQty').value = 1;
+
+      if (type === 'BUY') {
+        badge.innerText = 'BUY';
+        badge.className = 'text-xs font-black px-2.5 py-0.5 rounded text-slate-950 bg-emerald-400';
+        btn.innerText = 'Execute BUY Order';
+        btn.className = 'w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 py-3.5 rounded-xl font-bold text-xs tracking-wider uppercase transition shadow-lg shadow-emerald-500/20';
+      } else {
+        badge.innerText = 'SELL';
+        badge.className = 'text-xs font-black px-2.5 py-0.5 rounded text-white bg-rose-500';
+        btn.innerText = 'Execute SELL Order';
+        btn.className = 'w-full bg-rose-500 hover:bg-rose-400 text-white py-3.5 rounded-xl font-bold text-xs tracking-wider uppercase transition shadow-lg shadow-rose-500/20';
+      }
+
+      updateOrderSummary();
+      modal.classList.remove('hidden');
+    }
+
+    function closeTradeModal() {
+      document.getElementById('tradeModal').classList.add('hidden');
+    }
+
+    function updateOrderSummary() {
+      const qty = parseInt(document.getElementById('tradeQty').value) || 0;
+      const total = qty * STOCK_PRICE;
+      document.getElementById('orderTotal').innerText = formatINR(total);
+      document.getElementById('tradeAvailableBal').innerText = formatINR(userState.balance);
+    }
+
+    function executeTradeOrder() {
+      const qty = parseInt(document.getElementById('tradeQty').value);
+      const alert = document.getElementById('tradeAlert');
+      const totalCost = qty * STOCK_PRICE;
+
+      if (!qty || qty <= 0) {
+        alert.className = "text-xs p-3 rounded-xl font-medium bg-rose-500/10 border border-rose-500/30 text-rose-400 block mb-4";
+        alert.innerText = "Please specify a valid share volume.";
+        return;
+      }
+
+      if (currentTradeType === 'BUY') {
+        if (totalCost > userState.balance) {
+          alert.className = "text-xs p-3 rounded-xl font-medium bg-rose-500/10 border border-rose-500/30 text-rose-400 block mb-4";
+          alert.innerText = "Insufficient capital to execute order.";
+          return;
+        }
+
+        userState.balance -= totalCost;
+        const prevQty = userState.holdings.qty;
+        const newQty = prevQty + qty;
+        userState.holdings.avgPrice = ((prevQty * userState.holdings.avgPrice) + totalCost) / newQty;
+        userState.holdings.qty = newQty;
+
+        userState.transactions.unshift({
+          type: `Bought ${qty} Shares RELIANCE`,
+          amount: totalCost,
+          date: 'Just now',
+          status: 'Filled'
+        });
+
+      } else {
+        if (qty > userState.holdings.qty) {
+          alert.className = "text-xs p-3 rounded-xl font-medium bg-rose-500/10 border border-rose-500/30 text-rose-400 block mb-4";
+          alert.innerText = `Portfolio only holds ${userState.holdings.qty} available shares.`;
+          return;
+        }
+
+        userState.balance += totalCost;
+        userState.holdings.qty -= qty;
+        if (userState.holdings.qty === 0) userState.holdings.avgPrice = 0;
+
+        userState.transactions.unshift({
+          type: `Sold ${qty} Shares RELIANCE`,
+          amount: totalCost,
+          date: 'Just now',
+          status: 'Filled'
+        });
+      }
+
+      updateUI();
+      closeTradeModal();
+    }
+
+    // Wallet Deposit & Withdraw Controls
+    function openActionModal(action) {
+      currentAction = action;
+      const modal = document.getElementById('actionModal');
+      const title = document.getElementById('modalTitle');
+      const subtitle = document.getElementById('modalSubtitle');
+      const btn = document.getElementById('modalActionBtn');
+      const alert = document.getElementById('modalAlert');
+      
+      alert.classList.add('hidden');
+      document.getElementById('txAmount').value = '';
+
+      if (action === 'deposit') {
+        title.innerText = "Add Capital";
+        subtitle.innerText = "Instant deposit via linked account / UPI";
+        btn.innerText = "Complete Deposit";
+        btn.className = "w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 py-3.5 rounded-xl font-bold text-xs tracking-wider uppercase transition shadow-lg shadow-emerald-500/20";
+      } else {
+        title.innerText = "Withdraw Capital";
+        subtitle.innerText = "Available to withdraw: " + formatINR(userState.balance);
+        btn.innerText = "Request Payout";
+        btn.className = "w-full bg-slate-800 hover:bg-slate-700 text-white border border-slate-600 py-3.5 rounded-xl font-bold text-xs tracking-wider uppercase transition";
+      }
+
+      modal.classList.remove('hidden');
+    }
+
+    function closeActionModal() {
+      document.getElementById('actionModal').classList.add('hidden');
+    }
+
+    function setAmount(amt) {
+      document.getElementById('txAmount').value = amt;
+    }
+
+    function processTransaction() {
+      const amount = parseFloat(document.getElementById('txAmount').value);
+      const alert = document.getElementById('modalAlert');
+
+      if (!amount || amount <= 0) {
+        alert.className = "text-xs p-3 rounded-xl font-medium bg-rose-500/10 border border-rose-500/30 text-rose-400 block mb-4";
+        alert.innerText = "Please specify a valid amount.";
+        return;
+      }
+
+      if (currentAction === 'withdraw') {
+        // Friday Withdrawal Notice
+        alert.className = "text-xs p-3 rounded-xl font-medium bg-amber-500/10 border border-amber-500/30 text-amber-400 block mb-4";
+        alert.innerText = "Withdrawal will be done only Friday";
+        return;
+      }
+
+      userState.balance += amount;
+      userState.transactions.unshift({
+        type: 'Capital Deposit',
+        amount: amount,
+        date: 'Just now',
+        status: 'Settled'
+      });
+
+      updateUI();
+      closeActionModal();
+    }
+
+    // UI Synchronizer
+    function updateUI() {
+      document.getElementById('navBalance').innerText = formatINR(userState.balance);
+      document.getElementById('walletCardBalance').innerText = formatINR(userState.balance);
+
+      const holdingsContainer = document.getElementById('holdingsTableBody');
+      if (userState.holdings.qty === 0) {
+        holdingsContainer.innerHTML = '<tr><td colspan="4" class="py-6 text-center text-slate-500 text-xs font-sans">No open positions. Click BUY to initiate trade.</td></tr>';
+      } else {
+        const currentValue = userState.holdings.qty * STOCK_PRICE;
+        holdingsContainer.innerHTML = `
+          <tr class="hover:bg-slate-800/40 transition">
+            <td class="py-3.5 font-bold text-white">${userState.holdings.symbol}</td>
+            <td class="py-3.5 text-center font-bold text-slate-200">${userState.holdings.qty}</td>
+            <td class="py-3.5 text-right text-slate-400">${formatINR(userState.holdings.avgPrice)}</td>
+            <td class="py-3.5 text-right font-bold text-emerald-400">${formatINR(currentValue)}</td>
+          </tr>
+        `;
+      }
+
+      const txContainer = document.getElementById('txList');
+      txContainer.innerHTML = userState.transactions.map(tx => `
+        <div class="py-3 flex items-center justify-between">
+          <div>
+            <div class="font-bold text-slate-200">${tx.type}</div>
+            <div class="text-[11px] text-slate-500 font-mono">${tx.date}</div>
+          </div>
+          <div class="text-right font-mono">
+            <div class="font-bold ${tx.type.includes('Deposit') || tx.type.includes('Sold') || tx.type.includes('Inflow') ? 'text-emerald-400' : 'text-slate-300'}">
+              ${tx.type.includes('Deposit') || tx.type.includes('Sold') || tx.type.includes('Inflow') ? '+' : '-'}${formatINR(tx.amount)}
+            </div>
+            <div class="text-[10px] font-semibold text-slate-500 uppercase">${tx.status}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Chart Initialization (Safe Compatibility Mode)
+    function initTradingChart() {
+      const chartContainer = document.getElementById('tradingChartContainer');
+      if (chartInstance || !window.LightweightCharts) return;
+
+      chartInstance = LightweightCharts.createChart(chartContainer, {
+        width: chartContainer.clientWidth,
+        height: 320,
+        layout: {
+          background: { color: '#0F1420' },
+          textColor: '#94a3b8',
+        },
+        grid: {
+          vertLines: { color: 'rgba(30, 41, 59, 0.5)' },
+          horzLines: { color: 'rgba(30, 41, 59, 0.5)' },
+        },
+        crosshair: {
+          mode: 1,
+        },
+        rightPriceScale: {
+          borderColor: '#1e293b',
+        },
+        timeScale: {
+          borderColor: '#1e293b',
+        },
+      });
+
+      const seriesOptions = {
+        upColor: '#10B981',
+        downColor: '#F43F5E',
+        borderDownColor: '#F43F5E',
+        borderUpColor: '#10B981',
+        wickDownColor: '#F43F5E',
+        wickUpColor: '#10B981',
+      };
+
+      if (typeof chartInstance.addCandlestickSeries === 'function') {
+        candlestickSeries = chartInstance.addCandlestickSeries(seriesOptions);
+      } else if (typeof chartInstance.addSeries === 'function' && LightweightCharts.CandlestickSeries) {
+        candlestickSeries = chartInstance.addSeries(LightweightCharts.CandlestickSeries, seriesOptions);
+      }
+
+      const sampleData = [
+        { time: '2026-08-01', open: 2880, high: 2910, low: 2870, close: 2905 },
+        { time: '2026-08-02', open: 2905, high: 2925, low: 2890, close: 2915 },
+        { time: '2026-08-05', open: 2915, high: 2930, low: 2900, close: 2910 },
+        { time: '2026-08-06', open: 2910, high: 2940, low: 2895, close: 2935 },
+        { time: '2026-08-07', open: 2935, high: 2950, low: 2920, close: 2940 },
+        { time: '2026-08-08', open: 2940, high: 2960, low: 2930, close: 2935 },
+        { time: '2026-08-09', open: 2935, high: 2955, low: 2925, close: 2950 },
+        { time: '2026-08-12', open: 2950, high: 2975, low: 2940, close: 2965 },
+        { time: '2026-08-13', open: 2965, high: 2980, low: 2945, close: 2955 },
+        { time: '2026-08-14', open: 2955, high: 2970, low: 2935, close: 2940 },
+        { time: '2026-08-15', open: 2940, high: 2960, low: 2925, close: 2945 },
+        { time: '2026-08-16', open: 2945, high: 2980, low: 2940, close: 2970 },
+        { time: '2026-08-19', open: 2970, high: 2990, low: 2955, close: 2960 },
+        { time: '2026-08-20', open: 2960, high: 2975, low: 2930, close: 2940 },
+        { time: '2026-08-21', open: 2940, high: 2965, low: 2935, close: 2955 },
+        { time: '2026-08-22', open: 2955, high: 2980, low: 2940, close: 2965 },
+        { time: '2026-08-25', open: 2965, high: 2970, low: 2930, close: 2950 }
+      ];
+
+      if (candlestickSeries) {
+        candlestickSeries.setData(sampleData);
+        chartInstance.timeScale().fitContent();
+      }
+
+      window.addEventListener('resize', () => {
+        if (chartInstance) {
+          chartInstance.applyOptions({ width: chartContainer.clientWidth });
+        }
+      });
+    }
+
+    function switchTimeframe(tf) {
+      if (!candlestickSeries) return;
+      chartInstance.timeScale().fitContent();
+    }
+  </script>
+</body>
+</html>
