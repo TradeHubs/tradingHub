@@ -5,16 +5,23 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>InvestHub Pro - Ultra Trading Terminal</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- TradingView Official Live Widget -->
+  <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <style>
     body { font-family: 'Plus Jakarta Sans', sans-serif; }
     .custom-scroll::-webkit-scrollbar { width: 5px; height: 5px; }
     .custom-scroll::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 9999px; }
-    .groww-green { color: #00D09C; }
-    .bg-groww-green { background-color: #00D09C; }
-    .bg-groww-green:hover { background-color: #00b386; }
-    .border-groww-green { border-color: #00D09C; }
+    @keyframes greenFlash {
+      0% { background-color: rgba(16, 185, 129, 0.3); }
+      100% { background-color: transparent; }
+    }
+    @keyframes redFlash {
+      0% { background-color: rgba(244, 63, 94, 0.3); }
+      100% { background-color: transparent; }
+    }
+    .flash-green { animation: greenFlash 0.8s ease-out; }
+    .flash-red { animation: redFlash 0.8s ease-out; }
   </style>
 </head>
 <body class="bg-[#0B0F17] text-slate-100 min-h-screen flex flex-col selection:bg-emerald-500 selection:text-white">
@@ -32,7 +39,7 @@
           </svg>
         </div>
         <h1 class="text-2xl font-extrabold tracking-tight text-white">InvestHub <span class="text-emerald-400 text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">PRO</span></h1>
-        <p class="text-slate-400 text-xs mt-1.5 font-medium">Next-Gen Stock & Derivative Trading Platform</p>
+        <p class="text-slate-400 text-xs mt-1.5 font-medium">Live Tick-by-Tick Trading Terminal</p>
       </div>
 
       <div id="authAlert" class="hidden text-xs p-3.5 rounded-xl mb-5 text-center font-medium border"></div>
@@ -88,11 +95,17 @@
         </div>
 
         <div class="flex items-center space-x-4">
-          <button onclick="openActionModal('deposit')" class="bg-slate-900 hover:bg-slate-800 border border-slate-700/80 px-3.5 py-1.5 rounded-full text-xs font-semibold flex items-center space-x-2 transition">
+          <!-- Live Wallet Balance Display -->
+          <div class="bg-slate-900 border border-slate-700/80 px-3.5 py-1.5 rounded-full text-xs font-semibold flex items-center space-x-2">
             <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span class="text-slate-400">Funds:</span>
+            <span class="text-slate-400">Cash:</span>
             <span class="text-emerald-400 font-bold font-mono" id="navBalance">₹20,000.00</span>
-          </button>
+          </div>
+
+          <div class="bg-slate-900/90 border border-slate-700/80 px-3.5 py-1.5 rounded-full text-xs font-semibold flex items-center space-x-2">
+            <span class="text-slate-400">Total Equity:</span>
+            <span class="text-white font-bold font-mono" id="navTotalPortfolio">₹20,000.00</span>
+          </div>
           
           <div class="flex items-center space-x-2 border-l border-slate-800 pl-4">
             <div class="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xs font-bold font-mono">
@@ -111,32 +124,34 @@
       <div id="tabTerminalContent" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div class="lg:col-span-2 space-y-6">
           
-          <!-- Live Active Positions Banner -->
-          <div id="activePositionBanner" class="hidden bg-gradient-to-r from-slate-900 via-[#162235] to-slate-900 p-5 rounded-2xl border-2 border-emerald-500/50 shadow-2xl">
+          <!-- LIVE FLOATING PROFIT & LOSS POSITION BANNER -->
+          <div id="activePositionBanner" class="hidden bg-gradient-to-r from-[#0d1726] via-[#14233c] to-[#0d1726] p-5 rounded-2xl border-2 border-emerald-500/60 shadow-2xl transition-all duration-300">
             <div class="flex flex-wrap items-center justify-between gap-4">
               <div>
                 <div class="flex items-center space-x-2">
                   <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
-                  <span class="text-xs font-bold uppercase text-emerald-400 tracking-wider">LIVE OPEN POSITION</span>
+                  <span class="text-[11px] font-extrabold uppercase text-emerald-400 tracking-wider">LIVE OPEN POSITION (TICKING)</span>
                 </div>
-                <h3 class="text-xl font-extrabold text-white mt-1" id="bannerLiveSymbol">NIFTY 50</h3>
-                <p class="text-xs text-slate-400" id="bannerLiveDetails">Qty: 1 &bull; Buy Avg: ₹24,850.30</p>
+                <h3 class="text-xl font-black text-white mt-1" id="bannerLiveSymbol">NIFTY 50</h3>
+                <p class="text-xs text-slate-400 font-mono" id="bannerLiveDetails">Qty: 1 • Buy: ₹24,850.30 • Live LTP: ₹24,850.30</p>
               </div>
 
               <div class="flex items-center space-x-4">
-                <div class="text-right font-mono">
-                  <span class="text-[10px] text-slate-400 uppercase">Live P&L</span>
-                  <div class="text-lg font-black text-emerald-400" id="bannerLivePnl">+₹142.30 (+0.58%)</div>
+                <div class="text-right font-mono p-2 rounded-xl transition" id="bannerPnlBox">
+                  <span class="text-[10px] text-slate-400 uppercase font-bold">Unrealized P&L</span>
+                  <div class="text-xl font-black text-emerald-400" id="bannerLivePnl">+₹0.00 (+0.00%)</div>
                 </div>
-                <button onclick="exitActiveBannerPosition()" class="bg-rose-500 hover:bg-rose-400 text-white font-black px-6 py-2.5 rounded-xl text-xs uppercase tracking-wider transition shadow-lg shadow-rose-500/30 active:scale-95">
-                  EXIT POSITION (Square Off)
+                <button onclick="exitActiveBannerPosition()" class="bg-rose-500 hover:bg-rose-400 text-white font-black px-6 py-3 rounded-xl text-xs uppercase tracking-wider transition shadow-lg shadow-rose-500/30 active:scale-95">
+                  EXIT & LOCK PROFIT
                 </button>
               </div>
             </div>
           </div>
 
-          <!-- Live Chart Card -->
+          <!-- Real-Time TradingView Live Market Chart Card -->
           <div class="bg-[#121927] p-6 rounded-2xl border border-slate-800 shadow-xl relative overflow-hidden">
+            
+            <!-- Index Switcher Bar -->
             <div class="flex flex-wrap items-center justify-between gap-3 mb-4 pb-4 border-b border-slate-800/80">
               <div class="flex space-x-2 bg-slate-900/90 p-1 rounded-xl border border-slate-800">
                 <button id="btnSelectNifty" onclick="selectInstrument('NIFTY 50')" class="px-3.5 py-1.5 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-lg text-xs font-bold tracking-wider uppercase transition">NIFTY 50</button>
@@ -144,11 +159,9 @@
                 <button id="btnSelectBankNifty" onclick="selectInstrument('BANK NIFTY')" class="px-3.5 py-1.5 text-slate-400 hover:text-white rounded-lg text-xs font-bold tracking-wider uppercase transition">BANK NIFTY</button>
               </div>
 
-              <div class="flex space-x-1 bg-slate-900/60 p-1 rounded-lg text-[11px] font-semibold text-slate-400">
-                <button class="px-2.5 py-1 bg-slate-800 text-emerald-400 rounded">1D</button>
-                <button class="px-2.5 py-1 hover:text-white">1W</button>
-                <button class="px-2.5 py-1 hover:text-white">1M</button>
-                <button class="px-2.5 py-1 hover:text-white">1Y</button>
+              <div class="flex items-center space-x-2">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span class="text-xs text-emerald-400 font-mono font-bold">TradingView Live Feed</span>
               </div>
             </div>
 
@@ -157,12 +170,11 @@
                 <div class="flex items-center space-x-2">
                   <h2 class="text-2xl font-black text-white tracking-tight" id="activeStockSymbol">NIFTY 50</h2>
                   <span class="text-[10px] bg-slate-800 text-emerald-400 border border-emerald-500/30 font-bold px-2 py-0.5 rounded uppercase" id="activeStockIndex">INDEX</span>
-                  <span class="text-[10px] bg-emerald-500/10 text-emerald-400 font-medium px-2 py-0.5 rounded">Live Market</span>
                 </div>
                 <div class="flex items-baseline space-x-3 mt-1.5">
                   <span class="text-3xl font-black font-mono text-white" id="currentStockPrice">₹24,850.30</span>
                   <span class="text-xs font-bold text-emerald-400 flex items-center" id="activeStockChange">
-                    +142.30 (+0.58%) <span class="text-slate-500 font-normal ml-1">Today</span>
+                    +142.30 (+0.58%) <span class="text-slate-500 font-normal ml-1">Live</span>
                   </span>
                 </div>
               </div>
@@ -173,20 +185,18 @@
               </div>
             </div>
 
-            <!-- Native Candlestick Canvas -->
-            <div class="w-full bg-[#0F1420] rounded-xl border border-slate-800 p-4">
-              <canvas id="customCandleCanvas" height="280" class="w-full block"></canvas>
-            </div>
+            <!-- TradingView Embedded Widget Container -->
+            <div id="tradingview_widget_container" class="w-full h-[380px] rounded-xl overflow-hidden border border-slate-800 bg-[#0F1420]"></div>
           </div>
 
-          <!-- Holdings & Positions Table -->
+          <!-- Live Positions Table with Real-time P&L Tick -->
           <div class="bg-[#121927] rounded-2xl border border-slate-800 shadow-xl p-6">
             <div class="flex justify-between items-center mb-4">
               <div class="flex items-center space-x-2">
-                <h3 class="text-base font-bold text-white">Live Positions & Holdings</h3>
-                <span class="text-[10px] bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded font-mono">Real-Time Sync</span>
+                <h3 class="text-base font-bold text-white">Live Open Positions (Dynamic P&L)</h3>
+                <span class="text-[10px] bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded font-mono">Real-Time Ticker</span>
               </div>
-              <span class="text-xs text-slate-400 font-mono">1-Click Exit</span>
+              <span class="text-xs text-slate-400 font-mono">1-Click Square Off</span>
             </div>
             <div class="overflow-x-auto">
               <table class="w-full text-left text-xs">
@@ -194,8 +204,9 @@
                   <tr class="text-slate-400 border-b border-slate-800/80 pb-3">
                     <th class="pb-3 font-semibold uppercase">Asset</th>
                     <th class="pb-3 font-semibold uppercase text-center">Qty / Lots</th>
-                    <th class="pb-3 font-semibold uppercase text-right">Avg Price</th>
-                    <th class="pb-3 font-semibold uppercase text-right">Current Value</th>
+                    <th class="pb-3 font-semibold uppercase text-right">Buy Avg</th>
+                    <th class="pb-3 font-semibold uppercase text-right">Live LTP</th>
+                    <th class="pb-3 font-semibold uppercase text-right">Unrealized P&L</th>
                     <th class="pb-3 font-semibold uppercase text-center">Exit Option</th>
                   </tr>
                 </thead>
@@ -204,12 +215,12 @@
             </div>
           </div>
 
-          <!-- Constituent Stocks Watchlist -->
+          <!-- Watchlist -->
           <div class="bg-[#121927] rounded-2xl border border-slate-800 shadow-xl p-6">
             <div class="flex flex-wrap justify-between items-center gap-3 mb-4">
               <div>
                 <h3 class="text-base font-bold text-white">Constituent Stocks Watchlist</h3>
-                <p class="text-xs text-slate-500 mt-0.5">Click any company to open its live chart & trade directly</p>
+                <p class="text-xs text-slate-500 mt-0.5">Click any company to trade directly</p>
               </div>
 
               <div class="flex space-x-1.5 bg-slate-900 p-1 rounded-xl border border-slate-800 text-[11px] font-semibold">
@@ -240,9 +251,22 @@
         <!-- Right Side Widgets -->
         <div class="space-y-6">
           <div class="bg-gradient-to-b from-[#162032] to-[#111827] rounded-2xl border border-slate-800 shadow-xl p-6 relative overflow-hidden">
-            <div class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">InvestHub Balance</div>
-            <div class="text-3xl font-black text-white font-mono mt-2" id="walletCardBalance">₹20,000.00</div>
-            <p class="text-xs text-slate-500 mt-1">Available for stocks, MF & options</p>
+            <div class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">InvestHub Capital Account</div>
+            
+            <div class="mt-3 space-y-2">
+              <div class="flex justify-between items-baseline">
+                <span class="text-xs text-slate-400 font-medium">Available Cash:</span>
+                <span class="text-xl font-bold font-mono text-emerald-400" id="walletCardBalance">₹20,000.00</span>
+              </div>
+              <div class="flex justify-between items-baseline border-t border-slate-800 pt-2">
+                <span class="text-xs text-slate-300 font-bold">Total Portfolio Value:</span>
+                <span class="text-2xl font-black font-mono text-white" id="walletTotalEquity">₹20,000.00</span>
+              </div>
+              <div class="flex justify-between items-center text-xs">
+                <span class="text-slate-400">Active Live P&L:</span>
+                <span class="font-bold font-mono text-emerald-400" id="totalOpenPnl">+₹0.00</span>
+              </div>
+            </div>
 
             <div class="grid grid-cols-2 gap-3 mt-6">
               <button onclick="openActionModal('deposit')" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 py-3 rounded-xl font-bold text-xs tracking-wider uppercase transition shadow-md shadow-emerald-500/20 active:scale-95">+ Add Funds</button>
@@ -250,18 +274,15 @@
             </div>
           </div>
 
-          <!-- Verified Bank Mandate Widget -->
           <div class="bg-[#121927] rounded-2xl border border-slate-800 p-5 flex items-center justify-between shadow-lg">
             <div class="flex items-center space-x-3.5">
-              <div id="sideBankLogo" class="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center font-black text-xs font-mono">HDFC</div>
+              <div class="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center font-black text-xs font-mono">HDFC</div>
               <div>
-                <div id="sideBankTitle" class="text-xs font-bold text-slate-200">HDFC Bank •••• 4921</div>
+                <div class="text-xs font-bold text-slate-200">HDFC Bank •••• 4921</div>
                 <div class="text-[11px] text-slate-500">Primary Linked Mandate</div>
               </div>
             </div>
-            <button onclick="openActionModal('bank')" class="text-[10px] bg-emerald-500/10 hover:bg-emerald-500 hover:text-slate-950 text-emerald-400 border border-emerald-500/20 px-2.5 py-1 rounded-lg font-bold transition">
-              CHANGE
-            </button>
+            <span class="text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-1 rounded-full font-bold">ACTIVE</span>
           </div>
 
           <div class="bg-[#121927] rounded-2xl border border-slate-800 p-5 shadow-lg">
@@ -497,7 +518,7 @@
           ✓
         </div>
         <h2 class="text-xl font-extrabold text-white">Order Filled & Live!</h2>
-        <p class="text-xs text-slate-400 mt-0.5">Position is active in your terminal with instant exit option</p>
+        <p class="text-xs text-slate-400 mt-0.5">Live market price & P&L are ticking live in your dashboard</p>
       </div>
 
       <div class="bg-slate-900/90 border border-slate-800 p-4 rounded-xl space-y-2.5 text-xs font-mono mb-5">
@@ -524,7 +545,7 @@
           Exit Position Now
         </button>
         <button onclick="closeSuccessModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 py-3 rounded-xl font-bold text-xs uppercase tracking-wider transition border border-slate-700">
-          Keep Position
+          Watch Live P&L
         </button>
       </div>
     </div>
@@ -573,129 +594,27 @@
     </div>
   </div>
 
-  <!-- ================= UPGRADED GROWW-STYLE WALLET MODAL (DEPOSIT / WITHDRAW / PENNY DROP) ================= -->
-  <div id="actionModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-50">
-    <div class="bg-[#162032] border border-slate-700 w-full max-w-lg rounded-3xl p-6 shadow-2xl relative text-white">
+  <!-- ================= WALLET MODAL ================= -->
+  <div id="actionModal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center p-4 z-50">
+    <div class="bg-[#162032] border border-slate-700 w-full max-w-md rounded-2xl p-6 shadow-2xl relative text-white">
       <button onclick="closeActionModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-lg">&times;</button>
-      
-      <!-- Modal Navigation Tabs -->
-      <div class="flex border-b border-slate-800 mb-5 text-xs font-bold tracking-wider uppercase">
-        <button id="modalTabDeposit" onclick="switchFundsModalTab('deposit')" class="flex-1 pb-3 text-emerald-400 border-b-2 border-emerald-400 transition">
-          + Add Money (UPI / Bank)
-        </button>
-        <button id="modalTabWithdraw" onclick="switchFundsModalTab('withdraw')" class="flex-1 pb-3 text-slate-400 hover:text-slate-200 border-b-2 border-transparent transition">
-          Withdraw Funds
-        </button>
-        <button id="modalTabBank" onclick="switchFundsModalTab('bank')" class="flex-1 pb-3 text-slate-400 hover:text-slate-200 border-b-2 border-transparent transition">
-          Link Bank (Penny Drop)
-        </button>
-      </div>
-
+      <h2 id="modalTitle" class="text-xl font-bold tracking-tight mb-1">Add Capital</h2>
+      <p id="modalSubtitle" class="text-xs text-slate-400 mb-5">Instant deposit via linked account / UPI</p>
       <div id="modalAlert" class="hidden text-xs p-3.5 rounded-xl mb-4 font-medium border"></div>
 
-      <!-- ================= MODAL SUB-TAB 1: DEPOSIT ================= -->
-      <div id="modalDepositSection" class="space-y-4">
+      <div class="space-y-4">
         <div>
-          <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Enter Deposit Amount</label>
+          <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">Amount (₹)</label>
           <div class="relative">
-            <span class="absolute left-4 top-3 text-slate-500 font-mono font-bold text-lg">₹</span>
-            <input type="number" id="txAmount" class="w-full pl-9 pr-4 py-3 text-xl font-mono font-bold rounded-xl bg-slate-900 border border-slate-700 focus:border-emerald-400 focus:outline-none text-white" value="1000" min="100" />
-          </div>
-          <div class="grid grid-cols-4 gap-2 mt-2">
-            <button onclick="setTxAmount(500)" class="py-1 text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition">+₹500</button>
-            <button onclick="setTxAmount(1000)" class="py-1 text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition">+₹1000</button>
-            <button onclick="setTxAmount(2000)" class="py-1 text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition">+₹2000</button>
-            <button onclick="setTxAmount(5000)" class="py-1 text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition">+₹5000</button>
+            <span class="absolute left-4 top-3 text-slate-500 font-mono font-bold">₹</span>
+            <input type="number" id="txAmount" class="w-full pl-9 pr-4 py-3 text-lg font-mono font-bold rounded-xl bg-slate-900 border border-slate-700 focus:border-emerald-400 focus:outline-none text-white" placeholder="1000" />
           </div>
         </div>
 
-        <div class="space-y-2.5">
-          <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider">Payment Options</label>
-          
-          <!-- UPI Card -->
-          <div onclick="selectDepositPaymentMode('upi')" id="depositUpiOptionCard" class="p-3.5 border border-emerald-500 bg-emerald-500/10 rounded-2xl flex items-center justify-between cursor-pointer transition">
-            <div class="flex items-center gap-3">
-              <input type="radio" id="modalRadioUpi" name="fundModeModal" checked class="w-4 h-4 text-emerald-500 bg-slate-900" />
-              <div>
-                <p class="text-sm font-bold text-white">UPI Apps (GPay / PhonePe / Paytm)</p>
-                <p class="text-xs text-slate-400">Instant credit • Zero payment fee</p>
-              </div>
-            </div>
-            <span class="text-[10px] font-bold text-emerald-400 bg-emerald-500/20 px-2 py-0.5 rounded">FASTEST</span>
-          </div>
-
-          <!-- Net Banking Card -->
-          <div onclick="selectDepositPaymentMode('netbanking')" id="depositBankOptionCard" class="p-3.5 border border-slate-700 bg-slate-900/60 rounded-2xl flex items-center justify-between cursor-pointer transition">
-            <div class="flex items-center gap-3">
-              <input type="radio" id="modalRadioBank" name="fundModeModal" class="w-4 h-4 text-emerald-500 bg-slate-900" />
-              <div>
-                <p id="modalDepositBankLabel" class="text-sm font-bold text-white">HDFC Bank •••• 4921</p>
-                <p class="text-xs text-slate-400">Linked Primary Account • Net Banking</p>
-              </div>
-            </div>
-            <span class="text-[10px] font-semibold text-slate-400">PRIMARY</span>
-          </div>
-        </div>
-
-        <button onclick="executeModalDeposit()" id="modalDepositActionBtn" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 py-3.5 rounded-xl font-bold text-xs tracking-wider uppercase transition shadow-lg shadow-emerald-500/20 active:scale-95">
-          Add ₹1,000 to Wallet
+        <button id="modalActionBtn" onclick="processTransaction()" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 py-3.5 rounded-xl font-bold text-xs tracking-wider uppercase transition">
+          Confirm
         </button>
       </div>
-
-      <!-- ================= MODAL SUB-TAB 2: WITHDRAW ================= -->
-      <div id="modalWithdrawSection" class="hidden space-y-4">
-        <div>
-          <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Amount to Withdraw</label>
-          <div class="relative">
-            <span class="absolute left-4 top-3 text-slate-500 font-mono font-bold text-lg">₹</span>
-            <input type="number" id="txWithdrawAmount" class="w-full pl-9 pr-4 py-3 text-xl font-mono font-bold rounded-xl bg-slate-900 border border-slate-700 focus:border-emerald-400 focus:outline-none text-white" value="1000" min="100" />
-          </div>
-          <p id="modalWithdrawAvailNotice" class="text-xs text-slate-400 mt-1 font-mono">Available: ₹20,000.00</p>
-        </div>
-
-        <div class="p-4 bg-slate-900/80 border border-slate-800 rounded-2xl">
-          <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Direct IMPS Payout To</p>
-          <div class="flex justify-between items-center">
-            <div>
-              <p id="modalWithdrawBankName" class="text-sm font-bold text-white">HDFC Bank</p>
-              <p id="modalWithdrawBankDetails" class="text-xs text-slate-400 font-mono">•••• •••• 4921 &bull; IFSC: HDFC0000123</p>
-            </div>
-            <span class="text-[10px] font-bold text-emerald-400 bg-emerald-500/20 px-2 py-1 rounded">VERIFIED</span>
-          </div>
-        </div>
-
-        <button onclick="executeModalWithdrawal()" class="w-full bg-rose-500 hover:bg-rose-400 text-white py-3.5 rounded-xl font-bold text-xs tracking-wider uppercase transition shadow-lg shadow-rose-500/20 active:scale-95">
-          Request Withdrawal
-        </button>
-      </div>
-
-      <!-- ================= MODAL SUB-TAB 3: PENNY DROP BANK LINKING ================= -->
-      <div id="modalBankSection" class="hidden space-y-3.5">
-        <div>
-          <label class="block text-xs font-medium text-slate-300 mb-1">Account Holder Name (As per PAN)</label>
-          <input type="text" id="pennyHolderName" placeholder="e.g. NIHARIKA SAHU" class="w-full p-2.5 bg-slate-900 border border-slate-700 rounded-xl text-xs uppercase focus:border-emerald-400 focus:outline-none text-white" />
-        </div>
-
-        <div>
-          <label class="block text-xs font-medium text-slate-300 mb-1">Account Number</label>
-          <input type="password" id="pennyAccNumber" placeholder="Enter Account Number" class="w-full p-2.5 bg-slate-900 border border-slate-700 rounded-xl text-xs focus:border-emerald-400 focus:outline-none text-white" />
-        </div>
-
-        <div>
-          <label class="block text-xs font-medium text-slate-300 mb-1">Confirm Account Number</label>
-          <input type="text" id="pennyConfirmAccNumber" placeholder="Re-enter Account Number" class="w-full p-2.5 bg-slate-900 border border-slate-700 rounded-xl text-xs focus:border-emerald-400 focus:outline-none text-white" />
-        </div>
-
-        <div>
-          <label class="block text-xs font-medium text-slate-300 mb-1">IFSC Code</label>
-          <input type="text" id="pennyIfsc" placeholder="e.g. SBIN0001234" class="w-full p-2.5 bg-slate-900 border border-slate-700 rounded-xl text-xs uppercase focus:border-emerald-400 focus:outline-none text-white" />
-        </div>
-
-        <button onclick="executeModalPennyDrop()" id="pennyVerifyBtn" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 py-3.5 rounded-xl font-bold text-xs tracking-wider uppercase transition shadow-lg shadow-emerald-500/20 active:scale-95">
-          Verify Bank Account (₹1 Penny Drop)
-        </button>
-      </div>
-
     </div>
   </div>
 
@@ -718,10 +637,26 @@
     </div>
   </div>
 
-  <!-- ================= COMPLETE JAVASCRIPT ENGINE ================= -->
+  <!-- ================= COMPLETE JAVASCRIPT ENGINE WITH REAL-TIME P&L TICKER ================= -->
   <script>
     const VALID_USER = "Roshu2042";
     const VALID_PASS = "Roshu2042@";
+
+    const TRADINGVIEW_SYMBOLS = {
+      "NIFTY 50": "NSE:NIFTY",
+      "SENSEX": "BSE:SENSEX",
+      "BANK NIFTY": "NSE:BANKNIFTY",
+      "RELIANCE": "NSE:RELIANCE",
+      "TCS": "NSE:TCS",
+      "HDFCBANK": "NSE:HDFCBANK",
+      "ICICIBANK": "NSE:ICICIBANK",
+      "INFY": "NSE:INFY",
+      "SBIN": "NSE:SBIN",
+      "KOTAKBANK": "NSE:KOTAKBANK",
+      "AXISBANK": "NSE:AXISBANK",
+      "TATAMOTORS": "NSE:TATAMOTORS",
+      "ITC": "NSE:ITC"
+    };
 
     const MARKET_INDICES = [
       { symbol: "NIFTY 50", name: "National Stock Exchange Benchmark", index: "INDEX", price: 24850.30, change: "+142.30 (+0.58%)", isPositive: true },
@@ -792,14 +727,6 @@
       transactions: [{ type: 'Capital Inflow', amount: 20000, date: 'Initial Allocation', status: 'Settled' }]
     };
 
-    let primaryBank = {
-      name: 'HDFC Bank',
-      code: 'HDFC',
-      accMasked: '•••• •••• 4921',
-      ifsc: 'HDFC0000123'
-    };
-
-    let selectedDepositMode = 'upi';
     let activeInstrument = MARKET_INDICES[0];
     let selectedOptionIndex = 'NIFTY';
     let currentAction = 'deposit';
@@ -810,6 +737,7 @@
     let currentWatchlistFilter = 'ALL';
     let selectedOrderExecMode = 'instant';
     let lastExecutedTrade = null;
+    let liveTickInterval = null;
 
     const formatINR = (val) => "₹" + Number(val).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
@@ -820,17 +748,6 @@
       { id: 4, name: "Motilal Oswal Midcap Fund", category: "Mid Cap", cagr: "27.4%", rating: "5★", nav: "₹94.6" }
     ];
 
-    // Listen to Deposit Input dynamically
-    document.addEventListener('DOMContentLoaded', () => {
-      const txInp = document.getElementById('txAmount');
-      if (txInp) {
-        txInp.addEventListener('input', (e) => {
-          const val = Number(e.target.value) || 0;
-          document.getElementById('modalDepositActionBtn').innerText = `Add ₹${val.toLocaleString('en-IN')} to Wallet`;
-        });
-      }
-    });
-
     // Auth Submission
     document.getElementById('loginForm').addEventListener('submit', (e) => {
       e.preventDefault();
@@ -840,7 +757,7 @@
 
       if (user === VALID_USER && pass === VALID_PASS) {
         alert.className = "text-xs p-3.5 rounded-xl mb-5 text-center font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 block";
-        alert.innerText = "Login Verified. Loading...";
+        alert.innerText = "Login Verified. Loading TradingView Live Terminal...";
         setTimeout(() => {
           userState.isLoggedIn = true;
           document.getElementById('authView').classList.add('hidden');
@@ -848,7 +765,7 @@
           selectInstrument('NIFTY 50');
           updateUI();
           renderCompanyWatchlist();
-          drawCanvasCandleChart();
+          startLiveTickEngine(); // Start real-time P&L fluctuations
         }, 200);
       } else {
         alert.className = "text-xs p-3.5 rounded-xl mb-5 text-center font-medium bg-rose-500/10 text-rose-400 border border-rose-500/30 block";
@@ -858,8 +775,53 @@
 
     function logout() {
       userState.isLoggedIn = false;
+      if (liveTickInterval) clearInterval(liveTickInterval);
       document.getElementById('dashboardView').classList.add('hidden');
       document.getElementById('authView').classList.remove('hidden');
+    }
+
+    // ================= REAL-TIME P&L TICK ENGINE =================
+    function startLiveTickEngine() {
+      if (liveTickInterval) clearInterval(liveTickInterval);
+
+      liveTickInterval = setInterval(() => {
+        if (!userState.isLoggedIn || userState.holdings.length === 0) return;
+
+        // Apply dynamic micro-ticks to all active holdings
+        userState.holdings.forEach(h => {
+          // Dynamic price jump between -0.4% and +0.45%
+          const deltaPct = (Math.random() * 0.009) - 0.0042;
+          const delta = h.currentPrice * deltaPct;
+          h.currentPrice = Math.max(1, h.currentPrice + delta);
+        });
+
+        updateUI(true); // Soft update with live flash animation
+      }, 1500);
+    }
+
+    // Embed TradingView Live Streaming Real-Time Chart
+    function renderTradingViewLiveChart(tvSymbol) {
+      const container = document.getElementById('tradingview_widget_container');
+      if (!container) return;
+
+      container.innerHTML = '';
+
+      if (typeof TradingView !== 'undefined') {
+        new TradingView.widget({
+          "autosize": true,
+          "symbol": tvSymbol || "NSE:NIFTY",
+          "interval": "D",
+          "timezone": "Asia/Kolkata",
+          "theme": "dark",
+          "style": "1",
+          "locale": "in",
+          "toolbar_bg": "#0F1420",
+          "enable_publishing": false,
+          "hide_side_toolbar": false,
+          "allow_symbol_change": true,
+          "container_id": "tradingview_widget_container"
+        });
+      }
     }
 
     function selectInstrument(symbol) {
@@ -876,7 +838,7 @@
       
       const changeEl = document.getElementById('activeStockChange');
       changeEl.className = inst.isPositive ? "text-xs font-bold text-emerald-400 flex items-center" : "text-xs font-bold text-rose-400 flex items-center";
-      changeEl.innerHTML = `${inst.change} <span class="text-slate-500 font-normal ml-1">Today</span>`;
+      changeEl.innerHTML = `${inst.change} <span class="text-slate-500 font-normal ml-1">Live</span>`;
 
       const niftyBtn = document.getElementById('btnSelectNifty');
       const sensexBtn = document.getElementById('btnSelectSensex');
@@ -888,7 +850,8 @@
         bankBtn.className = symbol === 'BANK NIFTY' ? "px-3.5 py-1.5 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-lg text-xs font-bold tracking-wider uppercase transition" : "px-3.5 py-1.5 text-slate-400 hover:text-white rounded-lg text-xs font-bold tracking-wider uppercase transition";
       }
 
-      drawCanvasCandleChart();
+      const tvSym = TRADINGVIEW_SYMBOLS[symbol] || `NSE:${symbol}`;
+      renderTradingViewLiveChart(tvSym);
     }
 
     function switchOrderSubTab(subTab) {
@@ -924,7 +887,6 @@
       }
     }
 
-    // Submit Order & Immediate Live Exit Pop-up Trigger
     function submitOrderToTerminal() {
       const qty = parseInt(document.getElementById('tradeQty').value);
       const alert = document.getElementById('tradeAlert');
@@ -996,7 +958,6 @@
       closeTradeModal();
     }
 
-    // Core Execution Logic
     function processExecution(symbol, side, qty, price, total) {
       if (side === 'BUY') {
         userState.balance -= total;
@@ -1005,6 +966,7 @@
         if (existing) {
           existing.avgPrice = ((existing.qty * existing.avgPrice) + total) / (existing.qty + qty);
           existing.qty += qty;
+          existing.currentPrice = price;
         } else {
           userState.holdings.push({ symbol: symbol, qty: qty, avgPrice: price, currentPrice: price });
         }
@@ -1055,7 +1017,6 @@
       }
     }
 
-    // Show Live Success & Exit Pop-up
     function showLiveSuccessModal(symbol, side, qty, total) {
       lastExecutedTrade = { symbol, side, qty, total };
       document.getElementById('successModalSymbol').innerText = symbol;
@@ -1083,15 +1044,26 @@
       }
     }
 
+    // Direct Full Exit for Stock Holdings with Real-Time Lock-In
     function exitStockPosition(symbol) {
       const existing = userState.holdings.find(h => h.symbol === symbol);
       if (!existing) return;
 
-      const inst = MARKET_INDICES.find(i => i.symbol === symbol) || MARKET_COMPANIES.find(c => c.symbol === symbol);
-      const currentPrice = inst ? inst.price : existing.avgPrice;
-      const totalCost = existing.qty * currentPrice;
+      const livePrice = existing.currentPrice || existing.avgPrice;
+      const totalReturnedValue = existing.qty * livePrice;
+      const realizedPnl = (livePrice - existing.avgPrice) * existing.qty;
 
-      processExecution(symbol, 'SELL', existing.qty, currentPrice, totalCost);
+      // Credit total live value back to cash balance
+      userState.balance += totalReturnedValue;
+      
+      userState.transactions.unshift({
+        type: `Exited ${existing.qty} Units ${symbol} (P&L: ${realizedPnl >= 0 ? '+' : ''}${formatINR(realizedPnl)})`,
+        amount: totalReturnedValue,
+        date: 'Just now',
+        status: realizedPnl >= 0 ? 'Profit Settled' : 'Loss Settled'
+      });
+
+      userState.holdings = userState.holdings.filter(h => h.symbol !== symbol);
       updateUI();
     }
 
@@ -1210,89 +1182,8 @@
       if (tab === 'fo') renderOptionChain();
       if (tab === 'mf') renderMutualFunds();
       if (tab === 'analytics') renderAnalytics();
-      if (tab === 'terminal') setTimeout(drawCanvasCandleChart, 50);
+      if (tab === 'terminal') selectInstrument(activeInstrument.symbol);
     }
-
-    // Native Canvas Chart
-    function drawCanvasCandleChart() {
-      const canvas = document.getElementById('customCandleCanvas');
-      if (!canvas) return;
-      const ctx = canvas.getContext('2d');
-      const dpr = window.devicePixelRatio || 1;
-      const rect = canvas.getBoundingClientRect();
-      if (rect.width === 0) return;
-
-      canvas.width = rect.width * dpr;
-      canvas.height = 280 * dpr;
-      ctx.scale(dpr, dpr);
-
-      const width = rect.width;
-      const height = 280;
-
-      ctx.clearRect(0, 0, width, height);
-
-      const base = activeInstrument.price;
-      const candles = [
-        { o: base * 0.985, h: base * 0.992, l: base * 0.978, c: base * 0.99 },
-        { o: base * 0.99, h: base * 1.002, l: base * 0.985, c: base * 0.998 },
-        { o: base * 0.998, h: base * 1.008, l: base * 0.992, c: base * 0.995 },
-        { o: base * 0.995, h: base * 1.012, l: base * 0.988, c: base * 1.006 },
-        { o: base * 1.006, h: base * 1.018, l: base * 0.998, c: base * 1.012 },
-        { o: base * 1.012, h: base * 1.022, l: base * 1.004, c: base * 1.008 },
-        { o: base * 1.008, h: base * 1.015, l: base * 0.998, c: base * 1.014 },
-        { o: base * 1.014, h: base * 1.026, l: base * 1.008, c: base * 1.022 },
-        { o: base * 1.022, h: base * 1.032, l: base * 1.012, c: base * 1.018 },
-        { o: base * 1.018, h: base * 1.028, l: base * 1.008, c: base * (activeInstrument.isPositive ? 1.012 : 0.995) },
-        { o: base * 1.012, h: base * 1.018, l: base * 0.995, c: base }
-      ];
-
-      const minPrice = base * 0.96;
-      const maxPrice = base * 1.04;
-      const priceRange = maxPrice - minPrice;
-
-      ctx.strokeStyle = '#1e293b';
-      ctx.lineWidth = 1;
-      for (let i = 0; i < 5; i++) {
-        const y = (height / 5) * i;
-        ctx.beginPath();
-        ctx.moveTo(0, y);
-        ctx.lineTo(width, y);
-        ctx.stroke();
-
-        ctx.fillStyle = '#64748b';
-        ctx.font = '10px monospace';
-        const p = Math.round(maxPrice - (priceRange / 5) * i);
-        ctx.fillText('₹' + p.toLocaleString('en-IN'), width - 55, y + 12);
-      }
-
-      const candleSpacing = width / (candles.length + 1);
-      const candleWidth = Math.max(8, candleSpacing * 0.55);
-
-      candles.forEach((c, idx) => {
-        const x = candleSpacing * (idx + 1);
-        const yOpen = height - ((c.o - minPrice) / priceRange) * height;
-        const yClose = height - ((c.c - minPrice) / priceRange) * height;
-        const yHigh = height - ((c.h - minPrice) / priceRange) * height;
-        const yLow = height - ((c.l - minPrice) / priceRange) * height;
-
-        const isGreen = c.c >= c.o;
-        ctx.strokeStyle = isGreen ? '#10B981' : '#F43F5E';
-        ctx.fillStyle = isGreen ? '#10B981' : '#F43F5E';
-
-        ctx.beginPath();
-        ctx.moveTo(x, yHigh);
-        ctx.lineTo(x, yLow);
-        ctx.stroke();
-
-        const bodyY = Math.min(yOpen, yClose);
-        const bodyHeight = Math.max(2, Math.abs(yClose - yOpen));
-        ctx.fillRect(x - candleWidth / 2, bodyY, candleWidth, bodyHeight);
-      });
-    }
-
-    window.addEventListener('resize', () => {
-      if (userState.isLoggedIn) drawCanvasCandleChart();
-    });
 
     function openTradeModal(type) {
       currentActiveSymbol = activeInstrument.symbol;
@@ -1460,7 +1351,7 @@
     function renderMyMfList() {
       const list = document.getElementById('myMfList');
       if (userState.mfInvestments.length === 0) {
-        list.innerHTML = '<div class="py-6 text-center text-slate-500 text-xs font-sans">No active Mutual Fund SIPs or Investments found.</div>';
+        list.innerHTML = '<div class="py-6 text-center text-slate-500 text-xs font-sans">No active Mutual Fund SIPs found.</div>';
         return;
       }
       list.innerHTML = userState.mfInvestments.map(item => `
@@ -1514,218 +1405,139 @@
     }
 
     function renderAnalytics() {
-      const stockVal = userState.holdings.reduce((sum, h) => {
-        const inst = MARKET_INDICES.find(i => i.symbol === h.symbol) || MARKET_COMPANIES.find(c => c.symbol === h.symbol);
-        const price = inst ? inst.price : h.avgPrice;
-        return sum + (h.qty * price);
-      }, 0);
-
+      const stockVal = userState.holdings.reduce((sum, h) => sum + (h.qty * (h.currentPrice || h.avgPrice)), 0);
       const mfVal = userState.mfInvestments.reduce((sum, item) => sum + item.amount, 0);
       const totalPortfolio = userState.balance + stockVal + mfVal;
       document.getElementById('analyticsTotalValue').innerText = formatINR(totalPortfolio);
     }
 
-    // ================= UPGRADED WALLET & FUNDS LOGIC (GROWW STYLE) =================
     function openActionModal(action) {
+      currentAction = action;
+      const modal = document.getElementById('actionModal');
+      const title = document.getElementById('modalTitle');
+      const btn = document.getElementById('modalActionBtn');
+      
       document.getElementById('modalAlert').classList.add('hidden');
-      switchFundsModalTab(action);
-      document.getElementById('actionModal').classList.remove('hidden');
+      document.getElementById('txAmount').value = '';
+
+      if (action === 'deposit') {
+        title.innerText = "Add Capital";
+        btn.innerText = "Complete Deposit";
+      } else {
+        title.innerText = "Withdraw Capital";
+        btn.innerText = "Request Payout";
+      }
+
+      modal.classList.remove('hidden');
     }
 
     function closeActionModal() {
       document.getElementById('actionModal').classList.add('hidden');
     }
 
-    function switchFundsModalTab(tab) {
-      document.getElementById('modalDepositSection').classList.add('hidden');
-      document.getElementById('modalWithdrawSection').classList.add('hidden');
-      document.getElementById('modalBankSection').classList.add('hidden');
-
-      document.getElementById('modalTabDeposit').className = "flex-1 pb-3 text-slate-400 hover:text-slate-200 border-b-2 border-transparent transition";
-      document.getElementById('modalTabWithdraw').className = "flex-1 pb-3 text-slate-400 hover:text-slate-200 border-b-2 border-transparent transition";
-      document.getElementById('modalTabBank').className = "flex-1 pb-3 text-slate-400 hover:text-slate-200 border-b-2 border-transparent transition";
-
-      if (tab === 'deposit') {
-        document.getElementById('modalDepositSection').classList.remove('hidden');
-        document.getElementById('modalTabDeposit').className = "flex-1 pb-3 text-emerald-400 border-b-2 border-emerald-400 transition";
-      } else if (tab === 'withdraw') {
-        document.getElementById('modalWithdrawSection').classList.remove('hidden');
-        document.getElementById('modalTabWithdraw').className = "flex-1 pb-3 text-emerald-400 border-b-2 border-emerald-400 transition";
-        document.getElementById('modalWithdrawAvailNotice').innerText = `Available to withdraw: ${formatINR(userState.balance)}`;
-      } else if (tab === 'bank') {
-        document.getElementById('modalBankSection').classList.remove('hidden');
-        document.getElementById('modalTabBank').className = "flex-1 pb-3 text-emerald-400 border-b-2 border-emerald-400 transition";
-      }
-    }
-
-    function setTxAmount(val) {
-      document.getElementById('txAmount').value = val;
-      document.getElementById('modalDepositActionBtn').innerText = `Add ₹${val.toLocaleString('en-IN')} to Wallet`;
-    }
-
-    function selectDepositPaymentMode(mode) {
-      selectedDepositMode = mode;
-      const upiCard = document.getElementById('depositUpiOptionCard');
-      const bankCard = document.getElementById('depositBankOptionCard');
-      const radioUpi = document.getElementById('modalRadioUpi');
-      const radioBank = document.getElementById('modalRadioBank');
-
-      if (mode === 'upi') {
-        radioUpi.checked = true;
-        upiCard.className = "p-3.5 border border-emerald-500 bg-emerald-500/10 rounded-2xl flex items-center justify-between cursor-pointer transition";
-        bankCard.className = "p-3.5 border border-slate-700 bg-slate-900/60 rounded-2xl flex items-center justify-between cursor-pointer transition";
-      } else {
-        radioBank.checked = true;
-        bankCard.className = "p-3.5 border border-emerald-500 bg-emerald-500/10 rounded-2xl flex items-center justify-between cursor-pointer transition";
-        upiCard.className = "p-3.5 border border-slate-700 bg-slate-900/60 rounded-2xl flex items-center justify-between cursor-pointer transition";
-      }
-    }
-
-    function executeModalDeposit() {
+    function processTransaction() {
       const amount = parseFloat(document.getElementById('txAmount').value);
       const alert = document.getElementById('modalAlert');
 
-      if (!amount || amount < 100) {
-        alert.className = "text-xs p-3.5 rounded-xl mb-4 font-medium bg-rose-500/10 border border-rose-500/30 text-rose-400 block";
-        alert.innerText = "Minimum deposit is ₹100.";
+      if (!amount || amount <= 0) {
+        alert.className = "text-xs p-3 rounded-xl font-medium bg-rose-500/10 border border-rose-500/30 text-rose-400 block mb-4";
+        alert.innerText = "Please specify a valid amount.";
         return;
       }
 
-      const btn = document.getElementById('modalDepositActionBtn');
-      btn.innerText = "Connecting Payment Gateway...";
-      btn.disabled = true;
+      if (currentAction === 'withdraw') {
+        alert.className = "text-xs p-3 rounded-xl font-medium bg-amber-500/10 border border-amber-500/30 text-amber-400 block mb-4";
+        alert.innerText = "Withdrawal will be done only Friday and It will be take 24-72 hours";
+        return;
+      }
 
-      setTimeout(() => {
-        userState.balance += amount;
-        userState.transactions.unshift({
-          type: `Capital Deposit (${selectedDepositMode.toUpperCase()})`,
-          amount: amount,
-          date: 'Just now',
-          status: 'Settled'
-        });
+      userState.balance += amount;
+      userState.transactions.unshift({
+        type: 'Capital Deposit',
+        amount: amount,
+        date: 'Just now',
+        status: 'Settled'
+      });
 
-        updateUI();
-        btn.innerText = `Add ₹${amount.toLocaleString('en-IN')} to Wallet`;
-        btn.disabled = false;
-        closeActionModal();
-      }, 800);
+      updateUI();
+      closeActionModal();
     }
 
-    function executeModalWithdrawal() {
-      const amount = parseFloat(document.getElementById('txWithdrawAmount').value);
-      const alert = document.getElementById('modalAlert');
+    // Dynamic UI Synchronizer with Live Ticking P&L
+    function updateUI(isLiveTick = false) {
+      // Calculate live values across all active holdings
+      let totalStockCurrentValue = 0;
+      let totalOpenPnl = 0;
 
-      if (!amount || amount < 100) {
-        alert.className = "text-xs p-3.5 rounded-xl mb-4 font-medium bg-rose-500/10 border border-rose-500/30 text-rose-400 block";
-        alert.innerText = "Minimum withdrawal is ₹100.";
-        return;
-      }
+      userState.holdings.forEach(h => {
+        const curPrice = h.currentPrice || h.avgPrice;
+        const curVal = h.qty * curPrice;
+        const pnl = (curPrice - h.avgPrice) * h.qty;
+        totalStockCurrentValue += curVal;
+        totalOpenPnl += pnl;
+      });
 
-      if (amount > userState.balance) {
-        alert.className = "text-xs p-3.5 rounded-xl mb-4 font-medium bg-rose-500/10 border border-rose-500/30 text-rose-400 block";
-        alert.innerText = "Insufficient wallet balance.";
-        return;
-      }
+      const mfVal = userState.mfInvestments.reduce((sum, item) => sum + item.amount, 0);
+      const totalPortfolioEquity = userState.balance + totalStockCurrentValue + mfVal;
 
-      alert.className = "text-xs p-3.5 rounded-xl mb-4 font-medium bg-amber-500/10 border border-amber-500/30 text-amber-400 block";
-      alert.innerText = "Withdrawal will be done only Friday and It will be take 24-72 hours";
-    }
-
-    function executeModalPennyDrop() {
-      const name = document.getElementById('pennyHolderName').value.trim();
-      const acc = document.getElementById('pennyAccNumber').value.trim();
-      const confirmAcc = document.getElementById('pennyConfirmAccNumber').value.trim();
-      const ifsc = document.getElementById('pennyIfsc').value.trim().toUpperCase();
-      const alert = document.getElementById('modalAlert');
-
-      if (!name || !acc || !ifsc) {
-        alert.className = "text-xs p-3.5 rounded-xl mb-4 font-medium bg-rose-500/10 border border-rose-500/30 text-rose-400 block";
-        alert.innerText = "Please fill all bank details.";
-        return;
-      }
-      if (acc !== confirmAcc) {
-        alert.className = "text-xs p-3.5 rounded-xl mb-4 font-medium bg-rose-500/10 border border-rose-500/30 text-rose-400 block";
-        alert.innerText = "Account numbers do not match.";
-        return;
-      }
-      if (ifsc.length !== 11) {
-        alert.className = "text-xs p-3.5 rounded-xl mb-4 font-medium bg-rose-500/10 border border-rose-500/30 text-rose-400 block";
-        alert.innerText = "Invalid 11-digit IFSC code format.";
-        return;
-      }
-
-      const btn = document.getElementById('pennyVerifyBtn');
-      btn.innerText = "Verifying ₹1 Penny Drop...";
-      btn.disabled = true;
-
-      setTimeout(() => {
-        let bCode = ifsc.startsWith('SBIN') ? 'SBI' : ifsc.startsWith('ICIC') ? 'ICICI' : ifsc.startsWith('KKBK') ? 'KOTAK' : 'BANK';
-        let bName = ifsc.startsWith('SBIN') ? 'State Bank of India' : ifsc.startsWith('ICIC') ? 'ICICI Bank' : ifsc.startsWith('KKBK') ? 'Kotak Bank' : 'Verified Bank';
-        
-        primaryBank = {
-          name: bName,
-          code: bCode,
-          accMasked: '•••• •••• ' + acc.slice(-4),
-          ifsc: ifsc
-        };
-
-        // Update All Bank Labels Across Interface
-        document.getElementById('sideBankTitle').innerText = `${primaryBank.name} ${primaryBank.accMasked}`;
-        document.getElementById('sideBankLogo').innerText = primaryBank.code;
-        document.getElementById('modalDepositBankLabel').innerText = `${primaryBank.name} ${primaryBank.accMasked}`;
-        document.getElementById('modalWithdrawBankName').innerText = primaryBank.name;
-        document.getElementById('modalWithdrawBankDetails').innerText = `${primaryBank.accMasked} • IFSC: ${primaryBank.ifsc}`;
-
-        btn.innerText = "Verify Bank Account (₹1 Penny Drop)";
-        btn.disabled = false;
-        
-        alert.className = "text-xs p-3.5 rounded-xl mb-4 font-medium bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 block";
-        alert.innerText = `Bank Verified! Linked with ${primaryBank.name}`;
-        
-        setTimeout(() => {
-          switchFundsModalTab('deposit');
-        }, 1000);
-      }, 1200);
-    }
-
-    // UI Synchronizer with Live Position Banner
-    function updateUI() {
+      // Update Top Nav Bar
       document.getElementById('navBalance').innerText = formatINR(userState.balance);
-      document.getElementById('walletCardBalance').innerText = formatINR(userState.balance);
+      document.getElementById('navTotalPortfolio').innerText = formatINR(totalPortfolioEquity);
 
+      // Update Wallet Card in Terminal
+      document.getElementById('walletCardBalance').innerText = formatINR(userState.balance);
+      document.getElementById('walletTotalEquity').innerText = formatINR(totalPortfolioEquity);
+
+      const totalPnlEl = document.getElementById('totalOpenPnl');
+      totalPnlEl.className = totalOpenPnl >= 0 ? "font-bold font-mono text-emerald-400" : "font-bold font-mono text-rose-400";
+      totalPnlEl.innerText = `${totalOpenPnl >= 0 ? '+' : ''}${formatINR(totalOpenPnl)}`;
+
+      // Update Top Banner (Live Ticker)
       const banner = document.getElementById('activePositionBanner');
       if (userState.holdings.length > 0) {
         const topH = userState.holdings[0];
-        const inst = MARKET_INDICES.find(i => i.symbol === topH.symbol) || MARKET_COMPANIES.find(c => c.symbol === topH.symbol);
-        const curPrice = inst ? inst.price : topH.avgPrice;
+        const curPrice = topH.currentPrice || topH.avgPrice;
         const pnl = (curPrice - topH.avgPrice) * topH.qty;
         const pnlPercent = topH.avgPrice > 0 ? ((curPrice - topH.avgPrice) / topH.avgPrice) * 100 : 0;
 
         banner.classList.remove('hidden');
         document.getElementById('bannerLiveSymbol').innerText = topH.symbol;
-        document.getElementById('bannerLiveDetails').innerText = `Qty: ${topH.qty} • Buy Avg: ${formatINR(topH.avgPrice)} • LTP: ${formatINR(curPrice)}`;
+        document.getElementById('bannerLiveDetails').innerText = `Qty: ${topH.qty} • Buy Avg: ${formatINR(topH.avgPrice)} • Live LTP: ${formatINR(curPrice)}`;
         
         const pnlEl = document.getElementById('bannerLivePnl');
-        pnlEl.className = pnl >= 0 ? "text-lg font-black text-emerald-400" : "text-lg font-black text-rose-400";
+        pnlEl.className = pnl >= 0 ? "text-xl font-black text-emerald-400" : "text-xl font-black text-rose-400";
         pnlEl.innerText = `${pnl >= 0 ? '+' : ''}${formatINR(pnl)} (${pnl >= 0 ? '+' : ''}${pnlPercent.toFixed(2)}%)`;
+
+        // Flash animation
+        const pnlBox = document.getElementById('bannerPnlBox');
+        if (isLiveTick) {
+          pnlBox.className = pnl >= 0 ? "text-right font-mono p-2 rounded-xl flash-green" : "text-right font-mono p-2 rounded-xl flash-red";
+        }
       } else {
         banner.classList.add('hidden');
       }
 
+      // Update Holdings Table
       const holdingsContainer = document.getElementById('holdingsTableBody');
       if (userState.holdings.length === 0) {
-        holdingsContainer.innerHTML = '<tr><td colspan="5" class="py-6 text-center text-slate-500 text-xs font-sans">No open positions. Click BUY to initiate trade.</td></tr>';
+        holdingsContainer.innerHTML = '<tr><td colspan="6" class="py-6 text-center text-slate-500 text-xs font-sans">No open positions. Click BUY on NIFTY, SENSEX, or any Stock to practice live P&L.</td></tr>';
       } else {
         holdingsContainer.innerHTML = userState.holdings.map(h => {
-          const inst = MARKET_INDICES.find(i => i.symbol === h.symbol) || MARKET_COMPANIES.find(c => c.symbol === h.symbol);
-          const curPrice = inst ? inst.price : h.avgPrice;
+          const curPrice = h.currentPrice || h.avgPrice;
           const currentValue = h.qty * curPrice;
+          const pnl = (curPrice - h.avgPrice) * h.qty;
+          const pnlPercent = h.avgPrice > 0 ? ((curPrice - h.avgPrice) / h.avgPrice) * 100 : 0;
+          const isProfit = pnl >= 0;
+
           return `
             <tr class="hover:bg-slate-800/40 transition">
               <td class="py-3.5 font-bold text-white">${h.symbol}</td>
               <td class="py-3.5 text-center font-bold text-slate-200">${h.qty}</td>
               <td class="py-3.5 text-right text-slate-400">${formatINR(h.avgPrice)}</td>
-              <td class="py-3.5 text-right font-bold text-emerald-400">${formatINR(currentValue)}</td>
+              <td class="py-3.5 text-right font-bold text-slate-100">${formatINR(curPrice)}</td>
+              <td class="py-3.5 text-right font-bold ${isProfit ? 'text-emerald-400' : 'text-rose-400'}">
+                ${isProfit ? '+' : ''}${formatINR(pnl)} <span class="text-[10px] block font-normal">(${isProfit ? '+' : ''}${pnlPercent.toFixed(2)}%)</span>
+              </td>
               <td class="py-3.5 text-center">
                 <button onclick="exitStockPosition('${h.symbol}')" class="bg-rose-500/20 hover:bg-rose-500 text-rose-400 hover:text-white border border-rose-500/40 px-3.5 py-1.5 rounded-lg text-xs font-bold uppercase transition">
                   EXIT
